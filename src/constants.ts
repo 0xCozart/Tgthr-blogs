@@ -3,6 +3,7 @@ import dotenvSafe from "dotenv-safe";
 
 dotenvSafe.config({
   path: path.resolve(__dirname, "..", ".env"),
+  example: path.resolve(__dirname, "..", ".env.example"),
 });
 
 export const { USER_NAME, PASSWORD, DB_NAME } = <{ [key: string]: string }>(
