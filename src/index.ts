@@ -1,12 +1,14 @@
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
+import { Post } from "./entities/Posts";
+import mikroConfig from "./mikro-orm.config";
 
-const __main__ = async () => {
-  const orm = await MikroORM.init({
-    dbName: "tgthr_db",
-    type: "postgresql",
-    debug: !__prod__,
-  });
+const main = async () => {
+  const orm = await MikroORM.init(mikroConfig);
+  console.log(orm.em);
+
+  const post = orm.em.create(Post, { title: "First post" });
+  await orm.em.persistAndFlush(post);
 };
 
-__main__();
+main();
