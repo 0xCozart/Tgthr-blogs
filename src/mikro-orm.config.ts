@@ -1,13 +1,15 @@
-import { Post } from "./entities/Posts";
-import { __prod__, DB_NAME, USER_NAME, PASSWORD } from "./constants";
-import { MikroORM } from "@mikro-orm/core";
 import path from "path";
+import { __prod__, DB_NAME, USER_NAME, PASSWORD } from "./constants";
+
+import { MikroORM } from "@mikro-orm/core";
+import { User } from "./entities/User";
+import { Post } from "./entities/Post";
 
 export default {
   dbName: DB_NAME,
   user: USER_NAME,
   password: PASSWORD,
-  entities: [Post],
+  entities: [Post, User],
   type: "postgresql",
   debug: !__prod__,
   migrations: {
@@ -16,5 +18,7 @@ export default {
   },
 } as Parameters<typeof MikroORM.init>[0];
 
-// Parameters<typeof MikroORM.init>[0] creates type safety for the
-// first parameter of MikroORM.init().
+/* 
+  Parameters<typeof MikroORM.init>[0] creates type safety for the
+  first parameter of MikroORM.init() 
+*/
