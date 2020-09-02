@@ -17,6 +17,9 @@ export class Post {
   updatedAt = new Date();
 
   @Field(() => String)
+  @Property({ type: "text", unique: true })
+  username!: string;
+
   @Property({ type: "text" })
-  title!: string;
+  password!: string;
 }

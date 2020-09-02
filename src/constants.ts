@@ -3,6 +3,7 @@ import dotenvSafe from "dotenv-safe";
 
 dotenvSafe.config({
   path: path.resolve(__dirname, "..", ".env"),
+  // For some reason dotenv-safe requires an example field...
   example: path.resolve(__dirname, "..", ".env.example"),
 });
 
