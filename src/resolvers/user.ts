@@ -6,6 +6,7 @@ import {
   Arg,
   Ctx,
   ObjectType,
+  Query,
 } from "type-graphql";
 import { MyContext } from "../types";
 import { User } from "../entities/User";
@@ -40,11 +41,22 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req, em }: MyContext) {
+    if (!req.session.userId) {
+      return null;
+    }
+
+    const user = await em.findOne(User, { id: req.session.userId });
+
+    return user;
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg("credentials")
     { username, password }: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     if (username.length <= 2) {
       return {
@@ -77,7 +89,7 @@ export class UserResolver {
     try {
       await em.persistAndFlush(user);
     } catch (error) {
-      // dupllicate user name error handling
+      // duplicate user name error handling
       console.log(error);
       if (error.code == "23505") {
         return {
@@ -85,6 +97,11 @@ export class UserResolver {
         };
       }
     }
+
+    // store user id session
+    // sets user cookie
+    // keeps user logged in
+    req.session.userId = user.id;
 
     return { user };
   }
@@ -121,7 +138,7 @@ export class UserResolver {
       };
     }
 
-    req.session!.userId = user.id;
+    req.session.userId = user.id;
 
     return { user };
   }
