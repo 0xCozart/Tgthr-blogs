@@ -93,7 +93,7 @@ export class UserResolver {
   async login(
     @Arg("credentials")
     { username, password }: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOneOrFail(User, { username: username });
 
@@ -120,6 +120,8 @@ export class UserResolver {
         ],
       };
     }
+
+    req.session!.userId = user.id;
 
     return { user };
   }
