@@ -8,9 +8,11 @@ import {
   ObjectType,
   Query,
 } from "type-graphql";
+import argon2 from "argon2";
+import { EntityManager } from "@mikro-orm/postgresql";
+
 import { MyContext } from "../types";
 import { User } from "../entities/User";
-import argon2 from "argon2";
 
 @InputType()
 class UsernamePasswordInput {
@@ -41,6 +43,7 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  // Me: returns currently signed in user or null
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req, em }: MyContext) {
     if (!req.session.userId) {
@@ -51,6 +54,9 @@ export class UserResolver {
 
     return user;
   }
+
+  // register: takes in credentials returns user...
+  // + creates cookie with user.id...
 
   @Mutation(() => UserResponse)
   async register(
@@ -81,13 +87,22 @@ export class UserResolver {
     }
 
     const hashedPassword = await argon2.hash(password);
-    const user = em.create(User, {
-      username: username,
-      password: hashedPassword,
-    });
+    let user;
 
     try {
-      await em.persistAndFlush(user);
+      const currentTime = new Date();
+      const result = await (em as EntityManager)
+        .createQueryBuilder(User)
+        .getKnexQuery()
+        .insert({
+          username: username,
+          password: hashedPassword,
+          created_at: currentTime,
+          updated_at: currentTime,
+        })
+        .returning("*");
+
+      user = result[0];
     } catch (error) {
       // duplicate user name error handling
       console.log(error);
@@ -98,6 +113,7 @@ export class UserResolver {
       }
     }
 
+    console.log(user);
     // store user id session
     // sets user cookie
     // keeps user logged in
@@ -106,6 +122,7 @@ export class UserResolver {
     return { user };
   }
 
+  // login: takes in sign-in credentials returns valid user + sets user in cookies
   @Mutation(() => UserResponse)
   async login(
     @Arg("credentials")
