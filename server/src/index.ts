@@ -3,7 +3,7 @@ import express from "express";
 
 //MikroOrm for PostgreSQL
 import { MikroORM } from "@mikro-orm/core";
-import { __prod__, REDIS_SESSION_SECRET, PORT } from "./constants";
+import { __prod__, REDIS_SESSION_SECRET, PORT, COOKIE_NAME } from "./constants";
 import mikroConfig from "./mikro-orm.config";
 
 // Graphql
@@ -50,7 +50,7 @@ const main = async () => {
 
   app.use(
     session({
-      name: "qid",
+      name: COOKIE_NAME,
       store: new RedisStore({
         client: redisClient,
         disableTouch: true,

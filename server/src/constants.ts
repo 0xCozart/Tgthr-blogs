@@ -12,3 +12,5 @@ export const { USER_NAME, PASSWORD, DB_NAME, REDIS_SESSION_SECRET, PORT } = <
 >process.env;
 
 export const __prod__ = process.env.NODE_ENV === "production";
+
+export const COOKIE_NAME = "qid";
