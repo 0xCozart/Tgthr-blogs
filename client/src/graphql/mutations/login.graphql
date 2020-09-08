@@ -5,10 +5,7 @@ mutation Login($credentials: UsernamePasswordInput!) {
       message
     }
     user {
-      id
-      username
-      createdAt
-      updatedAt
+      ...RegularUser
     }
   }
 }
