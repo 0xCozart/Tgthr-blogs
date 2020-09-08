@@ -2,6 +2,8 @@ import React from "react";
 import { useRouter } from "next/router";
 import { Formik, Form } from "formik";
 import { Box, Button } from "@chakra-ui/core";
+import { withUrqlClient } from "next-urql";
+import { createUrqlClient } from "../utils/createUrqlClient";
 
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
@@ -27,9 +29,9 @@ const Register: React.FC<registerProps> = ({}) => {
             password: values.password,
           });
 
-          if (response.data.register.errors) {
+          if (response.data?.register.errors) {
             setErrors(toErrorMap(response.data.register.errors));
-          } else if (response.data.register.user) {
+          } else if (response.data?.register.user) {
             router.push("/");
           }
         }}
@@ -64,4 +66,4 @@ const Register: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default Register;
+export default withUrqlClient(createUrqlClient)(Register);
