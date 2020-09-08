@@ -1,7 +1,7 @@
 // Express
 import express from "express";
 
-//MikroOrm for PostgreSQL
+//MikroORM for PostgreSQL
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__, REDIS_SESSION_SECRET, PORT, COOKIE_NAME } from "./constants";
 import mikroConfig from "./mikro-orm.config";
