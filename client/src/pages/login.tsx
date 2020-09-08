@@ -26,7 +26,6 @@ const Login: React.FC<{}> = ({}) => {
               password: values.password,
             },
           });
-          console.log(response);
 
           if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));

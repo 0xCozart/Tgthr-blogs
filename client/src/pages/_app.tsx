@@ -3,6 +3,7 @@ import { Provider, createClient } from "urql";
 import { ThemeProvider, CSSReset, ColorModeProvider } from "@chakra-ui/core";
 
 import theme from "../theme";
+import NavBar from "../components/NavBar";
 
 const client = createClient({
   url: "http://localhost:5000/graphql",
@@ -17,6 +18,7 @@ function MyApp({ Component, pageProps }) {
       <ThemeProvider theme={theme}>
         <ColorModeProvider>
           <CSSReset />
+          <NavBar />
           <Component {...pageProps} />
         </ColorModeProvider>
       </ThemeProvider>
