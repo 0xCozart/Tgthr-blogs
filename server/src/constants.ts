@@ -7,9 +7,15 @@ dotenvSafe.config({
   example: path.resolve(__dirname, "..", ".env.example"),
 });
 
-export const { USER_NAME, PASSWORD, DB_NAME, REDIS_SESSION_SECRET, PORT } = <
-  { [key: string]: string }
->process.env;
+export const {
+  USER_NAME,
+  PASSWORD,
+  DB_NAME,
+  REDIS_SESSION_SECRET,
+  PORT,
+  NODEMAILER_USER,
+  NODEMAILER_PASS,
+} = <{ [key: string]: string }>process.env;
 
 export const __prod__ = process.env.NODE_ENV === "production";
 
