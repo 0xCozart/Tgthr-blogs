@@ -17,16 +17,20 @@ const Login: React.FC<{}> = ({}) => {
     <Wrapper variant="small">
       <Formik
         initialValues={{ username: "", password: "" }}
-        onSubmit={async ({ username, password }, { setErrors }) => {
+        onSubmit={async (values, { setErrors }) => {
           // Can simply pass in register(values) since the keys in
           // the value objects match but practice.
           const response = await login({
-            credentials: { username: username, password: password },
+            credentials: {
+              username: values.username,
+              password: values.password,
+            },
           });
+          console.log(response);
 
-          if (response.data.login.errors) {
+          if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));
-          } else if (response.data.login.user) {
+          } else if (response.data?.login.user) {
             router.push("/");
           }
         }}

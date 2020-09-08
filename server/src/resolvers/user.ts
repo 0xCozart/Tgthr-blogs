@@ -9,7 +9,6 @@ import {
   Query,
 } from "type-graphql";
 import argon2 from "argon2";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { MyContext } from "../types";
 import { User } from "../entities/User";
@@ -120,14 +119,14 @@ export class UserResolver {
     { username, password }: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOneOrFail(User, { username: username });
+    const user = await em.findOne(User, { username: username });
 
     if (!user) {
       return {
         errors: [
           {
             field: "username",
-            message: "username does not exist",
+            message: `"${username}" does not exist`,
           },
         ],
       };
