@@ -57,6 +57,7 @@ export class UserResolver {
 
   // register: takes in credentials returns user...
   // + creates cookie with user.id...
+  // +
 
   @Mutation(() => UserResponse)
   async register(
@@ -87,22 +88,13 @@ export class UserResolver {
     }
 
     const hashedPassword = await argon2.hash(password);
-    let user;
+    const user = em.create(User, {
+      username: username,
+      password: hashedPassword,
+    });
 
     try {
-      const currentTime = new Date();
-      const result = await (em as EntityManager)
-        .createQueryBuilder(User)
-        .getKnexQuery()
-        .insert({
-          username: username,
-          password: hashedPassword,
-          created_at: currentTime,
-          updated_at: currentTime,
-        })
-        .returning("*");
-
-      user = result[0];
+      await em.persistAndFlush(user);
     } catch (error) {
       // duplicate user name error handling
       console.log(error);
@@ -113,7 +105,6 @@ export class UserResolver {
       }
     }
 
-    console.log(user);
     // store user id session
     // sets user cookie
     // keeps user logged in

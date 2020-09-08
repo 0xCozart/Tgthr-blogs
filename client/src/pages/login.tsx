@@ -5,31 +5,28 @@ import { Box, Button } from "@chakra-ui/core";
 
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
-import { useRegisterMutation } from "../generated/graphql";
+import { useLoginMutation } from "../generated/graphql";
 
 import { toErrorMap } from "../utils/toErrorMap";
 
-interface registerProps {}
-
-const Register: React.FC<registerProps> = ({}) => {
+const Login: React.FC<{}> = ({}) => {
   const router = useRouter();
-  const [status, register] = useRegisterMutation();
+  const [, login] = useLoginMutation();
 
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ username: "", password: "" }}
-        onSubmit={async (values, { setErrors }) => {
+        onSubmit={async ({ username, password }, { setErrors }) => {
           // Can simply pass in register(values) since the keys in
           // the value objects match but practice.
-          const response = await register({
-            username: values.username,
-            password: values.password,
+          const response = await login({
+            credentials: { username: username, password: password },
           });
 
-          if (response.data.register.errors) {
-            setErrors(toErrorMap(response.data.register.errors));
-          } else if (response.data.register.user) {
+          if (response.data.login.errors) {
+            setErrors(toErrorMap(response.data.login.errors));
+          } else if (response.data.login.user) {
             router.push("/");
           }
         }}
@@ -55,7 +52,7 @@ const Register: React.FC<registerProps> = ({}) => {
               isLoading={isSubmitting}
               variantColor="teal"
             >
-              register
+              login
             </Button>
           </Form>
         )}
@@ -64,4 +61,4 @@ const Register: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default Register;
+export default Login;

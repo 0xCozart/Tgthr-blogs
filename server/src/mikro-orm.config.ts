@@ -17,8 +17,3 @@ export default {
     pattern: /^[\w-]+\d+\.[tj]s$/,
   },
 } as Parameters<typeof MikroORM.init>[0];
-
-/* 
-  Parameters<typeof MikroORM.init>[0] creates type safety for the
-  first parameter of MikroORM.init() 
-*/
