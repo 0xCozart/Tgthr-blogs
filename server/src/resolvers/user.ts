@@ -1,6 +1,5 @@
 import {
   Resolver,
-  InputType,
   Mutation,
   Field,
   Arg,
@@ -13,15 +12,8 @@ import argon2 from "argon2";
 import { MyContext } from "../types";
 import { User } from "../entities/User";
 import { COOKIE_NAME } from "../constants";
-
-@InputType()
-class UsernamePasswordInput {
-  @Field(() => String)
-  username: string;
-
-  @Field(() => String)
-  password: string;
-}
+import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
+import { validateRegister } from "../utils/validateRegister";
 
 @ObjectType()
 class FieldError {
@@ -62,34 +54,17 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async register(
     @Arg("credentials")
-    { username, password }: UsernamePasswordInput,
+    { username, password, email }: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    if (username.length <= 2) {
-      return {
-        errors: [
-          {
-            field: "username",
-            message: "username must be longer than two characters.",
-          },
-        ],
-      };
-    }
-
-    if (password.length <= 8) {
-      return {
-        errors: [
-          {
-            field: "password",
-            message: "password must be longer than eight characters.",
-          },
-        ],
-      };
-    }
+    // TODO wrapper validaror
+    const errors = validateRegister({ username, password, email });
+    if (errors) return { errors };
 
     const hashedPassword = await argon2.hash(password);
     const user = em.create(User, {
-      username: username,
+      username,
+      email,
       password: hashedPassword,
     });
 
@@ -105,9 +80,7 @@ export class UserResolver {
       }
     }
 
-    // store user id session
-    // sets user cookie
-    // keeps user logged in
+    // store user id session + sets user cookie + keeps user logged in
     req.session.userId = user.id;
 
     return { user };
@@ -116,21 +89,39 @@ export class UserResolver {
   // login: takes in sign-in credentials returns valid user + sets user in cookies
   @Mutation(() => UserResponse)
   async login(
-    @Arg("credentials")
-    { username, password }: UsernamePasswordInput,
+    @Arg("usernameOrEmail")
+    usernameOrEmail: string,
+    @Arg("password")
+    password: string,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOne(User, { username: username });
+    const user = await em.findOne(
+      User,
+      usernameOrEmail.includes("@")
+        ? { email: usernameOrEmail }
+        : { username: usernameOrEmail }
+    );
 
     if (!user) {
-      return {
-        errors: [
-          {
-            field: "username",
-            message: `"${username}" does not exist`,
-          },
-        ],
-      };
+      if (usernameOrEmail.includes("@")) {
+        return {
+          errors: [
+            {
+              field: "email",
+              message: `"${usernameOrEmail}" does not exist`,
+            },
+          ],
+        };
+      } else {
+        return {
+          errors: [
+            {
+              field: "username",
+              message: `"${usernameOrEmail}" does not exist`,
+            },
+          ],
+        };
+      }
     }
 
     const validPassword = await argon2.verify(user.password, password);
@@ -163,5 +154,14 @@ export class UserResolver {
         resolve(true);
       });
     });
+  }
+
+  @Mutation(() => Boolean)
+  async forgotPassword(
+    @Arg("email") email: string,
+    @Ctx() { em, req }: MyContext
+  ) {
+    // const user = await em.findOne(User, { email });
+    return true;
   }
 }
