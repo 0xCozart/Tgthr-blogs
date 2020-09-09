@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { NODEMAILER_USER, NODEMAILER_PASS } from "src/constants";
+import { NODEMAILER_USER, NODEMAILER_PASS } from "../constants";
 
 // async..await is not allowed in global scope, must use a wrapper
 export async function sendEmail(to: string, html: string) {
@@ -22,12 +22,12 @@ export async function sendEmail(to: string, html: string) {
   // send mail with defined transport object
   let info = await transporter.sendMail({
     from: '"Fred Foo 👻" <foo@example.com>', // sender address
-    to: to, // list of receivers
-    subject: "Password change request", // Subject line
-    html, // plain text body
+    to, // list of receivers
+    subject: "Password change", // Subject line
+    html: html,
   });
 
-  console.log("Message sent: %s", info.messageId);
+  console.log("Message sent: %s", info.html);
 
   console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 }

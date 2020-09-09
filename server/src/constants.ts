@@ -19,4 +19,13 @@ export const {
 
 export const __prod__ = process.env.NODE_ENV === "production";
 
+// redis cookie name
 export const COOKIE_NAME = "qid";
+
+// redis prefix
+export const FORGET_PASSWORD_PREFIX = "forget-password:";
+
+// Days in miliseconds
+export const ONE_DAY = 1000 * 60 * 60 * 24;
+export const TWO_DAYS = 1000 * 60 * 60 * 24 * 2;
+export const THREE_DAYS = 1000 * 60 * 60 * 24 * 3;

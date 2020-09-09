@@ -20,13 +20,16 @@ const Register: React.FC<registerProps> = ({}) => {
   return (
     <Wrapper variant="small">
       <Formik
-        initialValues={{ username: "", password: "" }}
+        initialValues={{ username: "", email: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
           // Can simply pass in register(values) since the keys in
           // the value objects match but practice.
           const response = await register({
-            username: values.username,
-            password: values.password,
+            credentials: {
+              username: values.username,
+              email: values.email,
+              password: values.password,
+            },
           });
 
           if (response.data?.register.errors) {
@@ -43,6 +46,9 @@ const Register: React.FC<registerProps> = ({}) => {
               placeholder="username"
               label="Username"
             />
+            <Box mt={4}>
+              <InputField name="email" placeholder="email" label="Email" />
+            </Box>
             <Box mt={4}>
               <InputField
                 name="password"

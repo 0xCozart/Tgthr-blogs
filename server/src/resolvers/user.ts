@@ -8,12 +8,14 @@ import {
   Query,
 } from "type-graphql";
 import argon2 from "argon2";
+import { v4 } from "uuid";
 
 import { MyContext } from "../types";
 import { User } from "../entities/User";
-import { COOKIE_NAME } from "../constants";
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX, THREE_DAYS } from "../constants";
 import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
+import { sendEmail } from "../utils/sendEmail";
 
 @ObjectType()
 class FieldError {
@@ -103,25 +105,14 @@ export class UserResolver {
     );
 
     if (!user) {
-      if (usernameOrEmail.includes("@")) {
-        return {
-          errors: [
-            {
-              field: "email",
-              message: `"${usernameOrEmail}" does not exist`,
-            },
-          ],
-        };
-      } else {
-        return {
-          errors: [
-            {
-              field: "username",
-              message: `"${usernameOrEmail}" does not exist`,
-            },
-          ],
-        };
-      }
+      return {
+        errors: [
+          {
+            field: "usernameOrEmail",
+            message: `"${usernameOrEmail}" does not exist`,
+          },
+        ],
+      };
     }
 
     const validPassword = await argon2.verify(user.password, password);
@@ -159,9 +150,20 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async forgotPassword(
     @Arg("email") email: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em, redis }: MyContext
   ) {
-    // const user = await em.findOne(User, { email });
+    const user = await em.findOne(User, { email });
+    // Will return true even if no user is found for security reasons
+    if (!user) return true;
+
+    const token = v4();
+    const htmlLink = `<div><a href="http://localhost:3000/change-password/${token}">reset password</a></div>`;
+
+    // redis token expires in three days
+    redis.set(FORGET_PASSWORD_PREFIX + token, user.id, "ex", THREE_DAYS);
+
+    sendEmail(email, htmlLink);
+
     return true;
   }
 }

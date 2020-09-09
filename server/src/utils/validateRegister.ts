@@ -5,15 +5,6 @@ export const validateRegister = ({
   email,
   password,
 }: UsernamePasswordInput) => {
-  if (!email.includes("@")) {
-    return [
-      {
-        field: "email",
-        message: "invalid email address",
-      },
-    ];
-  }
-
   if (username.length <= 2) {
     return [
       {
@@ -28,6 +19,15 @@ export const validateRegister = ({
       {
         field: "username",
         message: "username cannot include an '@'",
+      },
+    ];
+  }
+
+  if (!email.includes("@")) {
+    return [
+      {
+        field: "email",
+        message: "invalid email address",
       },
     ];
   }

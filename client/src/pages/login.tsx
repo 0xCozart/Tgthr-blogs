@@ -3,8 +3,8 @@ import { useRouter } from "next/router";
 import { Formik, Form } from "formik";
 import { Box, Button } from "@chakra-ui/core";
 import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
 
+import { createUrqlClient } from "../utils/createUrqlClient";
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
 import { useLoginMutation } from "../generated/graphql";
@@ -18,15 +18,13 @@ const Login: React.FC<{}> = ({}) => {
   return (
     <Wrapper variant="small">
       <Formik
-        initialValues={{ username: "", password: "" }}
-        onSubmit={async (values, { setErrors }) => {
+        initialValues={{ usernameOrEmail: "", password: "" }}
+        onSubmit={async ({ usernameOrEmail, password }, { setErrors }) => {
           // Can simply pass in register(values) since the keys in
           // the value objects match but practice.
           const response = await login({
-            credentials: {
-              username: values.username,
-              password: values.password,
-            },
+            usernameOrEmail,
+            password,
           });
 
           if (response.data?.login.errors) {
@@ -39,9 +37,9 @@ const Login: React.FC<{}> = ({}) => {
         {({ isSubmitting }) => (
           <Form>
             <InputField
-              name="username"
-              placeholder="username"
-              label="Username"
+              name="usernameOrEmail"
+              placeholder="username or email"
+              label="Username or Email"
             />
             <Box mt={4}>
               <InputField
