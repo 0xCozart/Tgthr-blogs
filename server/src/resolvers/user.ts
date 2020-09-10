@@ -17,7 +17,6 @@ import { COOKIE_NAME, FORGET_PASSWORD_PREFIX, THREE_DAYS } from "../constants";
 import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmail";
-import { passwordLengthVerify } from "src/utils/passwordLengthVerify";
 
 @ObjectType()
 class FieldError {
@@ -206,8 +205,8 @@ export class UserResolver {
         ],
       };
 
-    const userId = await redis.get(FORGET_PASSWORD_PREFIX + token);
-
+    const key = FORGET_PASSWORD_PREFIX + token;
+    const userId = await redis.get(key);
     if (!userId) {
       return {
         errors: [
@@ -219,8 +218,8 @@ export class UserResolver {
       };
     }
 
+    // grabs user
     const user = await em.findOne(User, { id: parseInt(userId) });
-
     if (!user) {
       return {
         errors: [
@@ -231,13 +230,16 @@ export class UserResolver {
         ],
       };
     }
-
+    console.log(user);
+    // updates password
     user.password = await argon2.hash(newPassword);
-
+    // pushes change to postgresql
     await em.persistAndFlush(user);
-
+    // deletes token from redis
+    await redis.del(key);
+    // logs user in
     req.session.userId = user.id;
-
+    // returns user object in grapql
     return { user };
   }
 }

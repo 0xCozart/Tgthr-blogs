@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { Formik, Form } from "formik";
 import { Box, Button } from "@chakra-ui/core";
 import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
+import { urqlClient } from "../utils/urqlClient";
 
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
@@ -72,4 +72,4 @@ const Register: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(Register);
+export default withUrqlClient(urqlClient)(Register);

@@ -146,7 +146,13 @@ export type ChangePasswordMutation = (
   { __typename?: 'Mutation' }
   & { changePassword: (
     { __typename?: 'UserResponse' }
-    & UserResponseFragment
+    & { errors?: Maybe<Array<(
+      { __typename?: 'FieldError' }
+      & InputErrorFragment
+    )>>, user?: Maybe<(
+      { __typename?: 'User' }
+      & RegularUserFragment
+    )> }
   ) }
 );
 
@@ -254,10 +260,16 @@ ${RegularUserFragmentDoc}`;
 export const ChangePasswordDocument = gql`
     mutation ChangePassword($token: String!, $newPassword: String!) {
   changePassword(token: $token, newPassword: $newPassword) {
-    ...UserResponse
+    errors {
+      ...InputError
+    }
+    user {
+      ...RegularUser
+    }
   }
 }
-    ${UserResponseFragmentDoc}`;
+    ${InputErrorFragmentDoc}
+${RegularUserFragmentDoc}`;
 
 export function useChangePasswordMutation() {
   return Urql.useMutation<ChangePasswordMutation, ChangePasswordMutationVariables>(ChangePasswordDocument);

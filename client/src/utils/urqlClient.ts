@@ -10,7 +10,7 @@ import {
   LogoutMutation,
 } from "../generated/graphql";
 
-export const createUrqlClient = (ssrExchange: any) => ({
+export const urqlClient = (ssrExchange: any) => ({
   url: "http://localhost:5000/graphql",
   fetchOptions: {
     credentials: "include" as const,
