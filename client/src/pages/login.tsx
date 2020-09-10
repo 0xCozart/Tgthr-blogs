@@ -1,8 +1,9 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { Formik, Form } from "formik";
-import { Box, Button } from "@chakra-ui/core";
+import { Box, Button, Link, Flex } from "@chakra-ui/core";
 import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
 
 import { urqlClient } from "../utils/urqlClient";
 import Wrapper from "../components/Wrapper";
@@ -41,7 +42,7 @@ const Login: React.FC<{}> = ({}) => {
               placeholder="username or email"
               label="Username or Email"
             />
-            <Box mt={4}>
+            <Box mt={3}>
               <InputField
                 name="password"
                 placeholder="password"
@@ -49,14 +50,21 @@ const Login: React.FC<{}> = ({}) => {
                 type="password"
               />
             </Box>
-            <Button
-              mt={4}
-              type="submit"
-              isLoading={isSubmitting}
-              variantColor="teal"
-            >
-              login
-            </Button>
+            <Flex>
+              <Button
+                mt={5}
+                type="submit"
+                isLoading={isSubmitting}
+                variantColor="teal"
+              >
+                login
+              </Button>
+              <Box ml={"auto"}>
+                <NextLink href={"/forgot-password"}>
+                  <Link opacity={0.5}>forgot password</Link>
+                </NextLink>
+              </Box>
+            </Flex>
           </Form>
         )}
       </Formik>

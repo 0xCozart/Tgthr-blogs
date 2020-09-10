@@ -54,7 +54,8 @@
     "nodemailer": "^6.4.11",
     "pg": "^8.3.3",
     "reflect-metadata": "^0.1.13",
-    "type-graphql": "^1.0.0"
+    "type-graphql": "^1.0.0",
+    "typeorm": "^0.2.26"
   },
   "mikro-orm": {
     "useTsNode": true,

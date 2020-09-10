@@ -1,24 +1,34 @@
+import "reflect-metadata";
+
 // Express
 import express from "express";
 
 //MikroORM for PostgreSQL
-import { MikroORM } from "@mikro-orm/core";
+// import { MikroORM } from "@mikro-orm/core";
+// import mikroConfig from "./mikro-orm.config";
+
+// TypeORM
+import { createConnection } from "typeorm";
+import { User } from "./entities/User";
+import { Post } from "./entities/Post";
+
+// constants
 import {
   __prod__,
   REDIS_SESSION_SECRET,
   PORT,
   COOKIE_NAME,
   TEN_YEARS,
+  POSTGRES_DB_NAME,
+  POSTGRES_USERNAME,
+  POSTGRES_PASSWORD,
 } from "./constants";
-import mikroConfig from "./mikro-orm.config";
 
 // Graphql
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
-import "reflect-metadata";
 
 // Graphql resolvers
-import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
 
@@ -31,8 +41,17 @@ import connectRedis from "connect-redis";
 import cors from "cors";
 
 const main = async () => {
-  const orm = await MikroORM.init(mikroConfig);
-  await orm.getMigrator().up();
+  // const orm = await MikroORM.init(mikroConfig);
+  // await orm.getMigrator().up();
+  const connection = await createConnection({
+    type: "postgres",
+    database: POSTGRES_DB_NAME,
+    username: POSTGRES_USERNAME,
+    password: POSTGRES_PASSWORD,
+    logging: true,
+    synchronize: true,
+    entities: [User, Post],
+  });
 
   const app = express();
 
@@ -75,10 +94,10 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, PostResolver, UserResolver],
+      resolvers: [PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ em: orm.em, req, res, redis }),
+    context: ({ req, res }) => ({ req, res, redis }),
   });
 
   apolloServer.applyMiddleware({
