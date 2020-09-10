@@ -9,8 +9,9 @@ import {
 } from "type-graphql";
 import argon2 from "argon2";
 import { v4 } from "uuid";
+import { EntityManager } from "@mikro-orm/postgresql";
 
-import { MyContext } from "../types";
+import { MyContext } from "../types/MyContext";
 import { User } from "../entities/User";
 import { COOKIE_NAME, FORGET_PASSWORD_PREFIX, THREE_DAYS } from "../constants";
 import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
@@ -64,20 +65,42 @@ export class UserResolver {
     if (errors) return { errors };
 
     const hashedPassword = await argon2.hash(password);
-    const user = em.create(User, {
-      username,
-      email,
-      password: hashedPassword,
-    });
+    let user;
 
     try {
-      await em.persistAndFlush(user);
+      /* 
+      Needed to use KnexQueryBuilder since 2 or more succesive MikroROM error calls
+      to PSQL server causes MikroORM lifecycle error.
+
+      this method --> await em.persistAndFlush();
+
+      might raise issue
+      */
+      const results = await (em as EntityManager)
+        .createQueryBuilder(User)
+        .getKnexQuery()
+        .insert({
+          username,
+          email,
+          password: hashedPassword,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returning("*");
+
+      user = results[0];
     } catch (error) {
-      // duplicate user name error handling
-      console.log(error);
+      // duplicate username/email error handling
       if (error.code == "23505") {
+        if (error.detail.includes("(email)")) {
+          return {
+            errors: [
+              { field: "email", message: "email is already registered" },
+            ],
+          };
+        }
         return {
-          errors: [{ field: "username", message: "username already taken" }],
+          errors: [{ field: "username", message: "username already exists" }],
         };
       }
     }
@@ -166,4 +189,7 @@ export class UserResolver {
 
     return true;
   }
+
+  // @Mutation(() => UserResponse)
+  // async changePassword();
 }

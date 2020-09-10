@@ -29,3 +29,4 @@ export const FORGET_PASSWORD_PREFIX = "forget-password:";
 export const ONE_DAY = 1000 * 60 * 60 * 24;
 export const TWO_DAYS = 1000 * 60 * 60 * 24 * 2;
 export const THREE_DAYS = 1000 * 60 * 60 * 24 * 3;
+export const TEN_YEARS = 1000 * 60 * 60 * 24 * 365 * 10;

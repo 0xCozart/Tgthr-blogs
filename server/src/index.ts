@@ -3,7 +3,13 @@ import express from "express";
 
 //MikroORM for PostgreSQL
 import { MikroORM } from "@mikro-orm/core";
-import { __prod__, REDIS_SESSION_SECRET, PORT, COOKIE_NAME } from "./constants";
+import {
+  __prod__,
+  REDIS_SESSION_SECRET,
+  PORT,
+  COOKIE_NAME,
+  TEN_YEARS,
+} from "./constants";
 import mikroConfig from "./mikro-orm.config";
 
 // Graphql
@@ -56,7 +62,7 @@ const main = async () => {
         disableTouch: true,
       }),
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years because why not
+        maxAge: TEN_YEARS, // 10 years because why not
         httpOnly: true,
         secure: __prod__, //cookie only work in https
         sameSite: "lax", // csrf
