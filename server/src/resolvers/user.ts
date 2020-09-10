@@ -17,6 +17,7 @@ import { COOKIE_NAME, FORGET_PASSWORD_PREFIX, THREE_DAYS } from "../constants";
 import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmail";
+import { passwordLengthVerify } from "src/utils/passwordLengthVerify";
 
 @ObjectType()
 class FieldError {
@@ -52,7 +53,6 @@ export class UserResolver {
 
   // register: takes in credentials returns user...
   // + creates cookie with user.id...
-  // +
 
   @Mutation(() => UserResponse)
   async register(
@@ -69,7 +69,7 @@ export class UserResolver {
 
     try {
       /* 
-      Needed to use KnexQueryBuilder since 2 or more succesive MikroROM error calls
+      Used KnexQueryBuilder since 2 or more succesive MikroROM error calls
       to PSQL server causes MikroORM lifecycle error.
 
       this method --> await em.persistAndFlush();
@@ -190,6 +190,54 @@ export class UserResolver {
     return true;
   }
 
-  // @Mutation(() => UserResponse)
-  // async changePassword();
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() { redis, em, req }: MyContext
+  ): Promise<UserResponse> {
+    if (newPassword.length <= 2)
+      return {
+        errors: [
+          {
+            field: "newPassword",
+            message: "length must be greater than 2",
+          },
+        ],
+      };
+
+    const userId = await redis.get(FORGET_PASSWORD_PREFIX + token);
+
+    if (!userId) {
+      return {
+        errors: [
+          {
+            field: "token",
+            message: "token expired",
+          },
+        ],
+      };
+    }
+
+    const user = await em.findOne(User, { id: parseInt(userId) });
+
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: "token",
+            message: "user does not exist",
+          },
+        ],
+      };
+    }
+
+    user.password = await argon2.hash(newPassword);
+
+    await em.persistAndFlush(user);
+
+    req.session.userId = user.id;
+
+    return { user };
+  }
 }
