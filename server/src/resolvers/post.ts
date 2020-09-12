@@ -7,9 +7,12 @@ import {
   InputType,
   Field,
   Ctx,
+  UseMiddleware,
 } from "type-graphql";
 import { Post } from "../entities/Post";
 import { MyContext } from "src/types/MyContext";
+import { getConnection } from "typeorm";
+import { isAuth } from "src/middleware/isAuth";
 
 @InputType()
 class PostInput {
@@ -34,16 +37,27 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
+  @UseMiddleware(isAuth)
   async createPost(
-    @Arg("content", () => PostInput) content: PostInput,
+    @Arg("content") content: PostInput,
     @Ctx() { req }: MyContext
   ): Promise<Post> {
-    if (!req.session.userId) throw new Error("not authenticated");
+    /*
+     * <Post.create({}).save()> : error.code 42601 might be caused by
+     * my TZ on linux.
+     */
+    const newPost = await getConnection()
+      .createQueryBuilder()
+      .insert()
+      .into(Post)
+      .values({
+        ...content,
+        creatorId: req.session.userId,
+      })
+      .returning("*")
+      .execute();
 
-    return await Post.create({
-      ...content,
-      creatorId: req.session.userId,
-    }).save();
+    return newPost.raw[0];
   }
 
   @Mutation(() => Post, { nullable: true })

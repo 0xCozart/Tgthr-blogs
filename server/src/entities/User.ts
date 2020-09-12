@@ -13,15 +13,15 @@ import { Post } from "./Post";
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
-  @Field(() => Int)
+  @Field()
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field(() => String)
+  @Field()
   @Column({ unique: true })
   username!: string;
 
-  @Field(() => String)
+  @Field()
   @Column({ unique: true })
   email!: string;
 
@@ -29,7 +29,7 @@ export class User extends BaseEntity {
   password!: string;
 
   @Field(() => [Post])
-  @OneToMany(() => Post, (post) => post.creator)
+  @OneToMany(() => Post, (post) => post.creatorId)
   posts: Post[];
 
   @Field(() => String)
