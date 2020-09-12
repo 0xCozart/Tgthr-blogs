@@ -3,10 +3,6 @@ import "reflect-metadata";
 // Express
 import express from "express";
 
-//MikroORM for PostgreSQL
-// import { MikroORM } from "@mikro-orm/core";
-// import mikroConfig from "./mikro-orm.config";
-
 // TypeORM
 import { createConnection } from "typeorm";
 import { User } from "./entities/User";
@@ -24,11 +20,9 @@ import {
   POSTGRES_PASSWORD,
 } from "./constants";
 
-// Graphql
+// GraphQL
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
-
-// Graphql resolvers
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
 
@@ -41,8 +35,6 @@ import connectRedis from "connect-redis";
 import cors from "cors";
 
 const main = async () => {
-  // const orm = await MikroORM.init(mikroConfig);
-  // await orm.getMigrator().up();
   const connection = await createConnection({
     type: "postgres",
     database: POSTGRES_DB_NAME,
@@ -102,8 +94,8 @@ const main = async () => {
 
   apolloServer.applyMiddleware({
     app,
-    // Apollo auto sets cors origin to "*",
-    // just imported cors and set origin manually
+    // Apollo default config sets cors origin to "*",
+    // imported cors and set origin manually
     cors: false,
   });
 

@@ -9,7 +9,6 @@ import {
 } from "type-graphql";
 import argon2 from "argon2";
 import { v4 } from "uuid";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { MyContext } from "../types/MyContext";
 import { User } from "../entities/User";
@@ -17,6 +16,7 @@ import { COOKIE_NAME, FORGET_PASSWORD_PREFIX, THREE_DAYS } from "../constants";
 import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmail";
+import { getConnection } from "typeorm";
 
 @ObjectType()
 class FieldError {
@@ -40,26 +40,22 @@ class UserResponse {
 export class UserResolver {
   // Me: returns currently signed in user or null
   @Query(() => User, { nullable: true })
-  async me(@Ctx() { req, em }: MyContext) {
+  me(@Ctx() { req }: MyContext) {
     if (!req.session.userId) {
       return null;
     }
 
-    const user = await em.findOne(User, { id: req.session.userId });
-
-    return user;
+    return User.findOne(req.session.userId);
   }
 
   // register: takes in credentials returns user...
   // + creates cookie with user.id...
-
   @Mutation(() => UserResponse)
   async register(
     @Arg("credentials")
     { username, password, email }: UsernamePasswordInput,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    // TODO wrapper validaror
     const errors = validateRegister({ username, password, email });
     if (errors) return { errors };
 
@@ -67,27 +63,33 @@ export class UserResolver {
     let user;
 
     try {
-      /* 
-      Used KnexQueryBuilder since 2 or more succesive MikroROM error calls
-      to PSQL server causes MikroORM lifecycle error.
+      /*
+      * TypeORM Active Record pattern for inserting item into database
+      * does not return the item since it only executes one query,
+      * the ideal source would be something like this:
+      
+      const user = await User.create({
+        username: username,
+        email: email,
+        password: hashedPassword,
+      }).save();
 
-      this method --> await em.persistAndFlush();
-
-      might raise issue
+      * adding a <.returning("*")> method would be an ideal option
+      * as suggested here: https://github.com/typeorm/typeorm/issues/3490
       */
-      const results = await (em as EntityManager)
-        .createQueryBuilder(User)
-        .getKnexQuery()
-        .insert({
-          username,
-          email,
+      const insertUserResult = await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({
+          username: username,
+          email: email,
           password: hashedPassword,
-          created_at: new Date(),
-          updated_at: new Date(),
         })
-        .returning("*");
+        .returning("*")
+        .execute();
 
-      user = results[0];
+      user = insertUserResult.raw[0];
     } catch (error) {
       // duplicate username/email error handling
       if (error.code == "23505") {
@@ -105,26 +107,24 @@ export class UserResolver {
     }
 
     // store user id session + sets user cookie + keeps user logged in
-    req.session.userId = user.id;
-
+    req.session.userId = user?.id;
     return { user };
   }
 
-  // login: takes in sign-in credentials returns valid user + sets user in cookies
+  // login: takes in sign-in credentials => returns valid user + sets user in cookies
   @Mutation(() => UserResponse)
   async login(
     @Arg("usernameOrEmail")
     usernameOrEmail: string,
     @Arg("password")
     password: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOne(
-      User,
-      usernameOrEmail.includes("@")
+    const user = await User.findOne({
+      where: usernameOrEmail.includes("@")
         ? { email: usernameOrEmail }
-        : { username: usernameOrEmail }
-    );
+        : { username: usernameOrEmail },
+    });
 
     if (!user) {
       return {
@@ -172,9 +172,10 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async forgotPassword(
     @Arg("email") email: string,
-    @Ctx() { em, redis }: MyContext
+    @Ctx() { redis }: MyContext
   ) {
-    const user = await em.findOne(User, { email });
+    // Specify {where:} when searching for an item that is not the primary key
+    const user = await User.findOne({ where: { email } });
     // Will return true even if no user is found for security reasons
     if (!user) return true;
 
@@ -184,7 +185,7 @@ export class UserResolver {
     // redis token expires in three days
     redis.set(FORGET_PASSWORD_PREFIX + token, user.id, "ex", THREE_DAYS);
 
-    sendEmail(email, htmlLink);
+    await sendEmail(email, htmlLink);
 
     return true;
   }
@@ -193,7 +194,7 @@ export class UserResolver {
   async changePassword(
     @Arg("token") token: string,
     @Arg("newPassword") newPassword: string,
-    @Ctx() { redis, em, req }: MyContext
+    @Ctx() { redis, req }: MyContext
   ): Promise<UserResponse> {
     if (newPassword.length <= 2)
       return {
@@ -218,8 +219,9 @@ export class UserResolver {
       };
     }
 
-    // grabs user
-    const user = await em.findOne(User, { id: parseInt(userId) });
+    // grabs user + screens if exists
+    const userIdNum = parseInt(userId);
+    const user = await User.findOne(userIdNum);
     if (!user) {
       return {
         errors: [
@@ -230,11 +232,12 @@ export class UserResolver {
         ],
       };
     }
-    console.log(user);
-    // updates password
-    user.password = await argon2.hash(newPassword);
-    // pushes change to postgresql
-    await em.persistAndFlush(user);
+
+    // updates password + pushes changes to postgresql
+    await User.update(
+      { id: userIdNum },
+      { password: await argon2.hash(newPassword) }
+    );
     // deletes token from redis
     await redis.del(key);
     // logs user in
