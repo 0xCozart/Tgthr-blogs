@@ -1,6 +1,7 @@
 import React from "react";
 import { withUrqlClient } from "next-urql";
-import { urqlClient } from "../utils/urqlClient";
+
+import urqlClient from "../middleware/urqlClient";
 import { usePostsQuery } from "../generated/graphql";
 import NavBar from "../components/NavBar";
 

@@ -5,7 +5,7 @@ import { Box, Button, Link, Flex } from "@chakra-ui/core";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 
-import { urqlClient } from "../utils/urqlClient";
+import urqlClient from "../middleware/urqlClient";
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
 import { useLoginMutation } from "../generated/graphql";

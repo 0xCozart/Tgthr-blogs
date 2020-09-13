@@ -6,11 +6,12 @@ interface LayoutProps {
   variant?: WrapperVariant;
 }
 
-const Layout: React.FC<LayoutProps> = ({ variant }) => {
+const Layout: React.FC<LayoutProps> = ({ children, variant }) => {
   return (
-    <Wrapper variant={variant}>
+    <>
       <NavBar />
-    </Wrapper>
+      <Wrapper variant={variant}>{children}</Wrapper>
+    </>
   );
 };
 

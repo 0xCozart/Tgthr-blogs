@@ -6,7 +6,7 @@ import { Formik, Form } from "formik";
 import { Button, Box, Link, Flex } from "@chakra-ui/core";
 import NextLink from "next/link";
 
-import { urqlClient } from "../../utils/urqlClient";
+import urqlClient from "../../middleware/urqlClient";
 import { useChangePasswordMutation } from "../../generated/graphql";
 import Wrapper from "../../components/Wrapper";
 import { toErrorMap } from "../../utils/toErrorMap";

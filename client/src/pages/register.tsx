@@ -3,8 +3,8 @@ import { useRouter } from "next/router";
 import { Formik, Form } from "formik";
 import { Box, Button } from "@chakra-ui/core";
 import { withUrqlClient } from "next-urql";
-import { urqlClient } from "../utils/urqlClient";
 
+import urqlClient from "../middleware/urqlClient";
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
 import { useRegisterMutation } from "../generated/graphql";
