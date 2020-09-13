@@ -1,6 +1,7 @@
 fragment PostInfo on Post {
   id
   title
+  creatorId
   createdAt
   updatedAt
 }

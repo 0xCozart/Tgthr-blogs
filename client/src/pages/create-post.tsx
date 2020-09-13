@@ -7,21 +7,26 @@ import React from "react";
 
 import InputField from "../components/InputField";
 import Layout from "../components/Layout";
-import { useCreatePostMutation, useMeQuery } from "../generated/graphql";
+import { useCreatePostMutation } from "../generated/graphql";
 import urqlClient from "../middleware/urqlClient";
+import useIsAuth from "../utils/useIsAuth";
 
 const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
-  const [{ data }] = useMeQuery();
   const [, createPost] = useCreatePostMutation();
+  useIsAuth();
 
   return (
     <Layout variant="small">
       <Formik
         initialValues={{ title: "", text: "" }}
-        onSubmit={async ({ title, text }, { setErrors }) => {
-          await createPost({ content: { title, text } });
+        onSubmit={async ({ title, text }) => {
           router.push("/");
+          try {
+            await createPost({ content: { title, text } });
+          } catch (error) {
+            console.log(error.message);
+          }
         }}
       >
         {({ isSubmitting }) => (
@@ -41,7 +46,8 @@ const CreatePost: React.FC<{}> = ({}) => {
                 type="submit"
                 isLoading={isSubmitting}
                 variantColor="teal"
-                isDisabled={!data?.me?.id}
+
+                // isDisabled={!!data?.me?.id}
               >
                 post
               </Button>
