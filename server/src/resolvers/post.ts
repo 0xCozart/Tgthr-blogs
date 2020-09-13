@@ -9,10 +9,11 @@ import {
   Ctx,
   UseMiddleware,
 } from "type-graphql";
-import { Post } from "../entities/Post";
-import { MyContext } from "src/types/MyContext";
 import { getConnection } from "typeorm";
-import { isAuth } from "src/middleware/isAuth";
+
+import { Post } from "../entities/Post";
+import { MyContext } from "../types/MyContext";
+import { isAuth } from "../middleware/isAuth";
 
 @InputType()
 class PostInput {
@@ -37,7 +38,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware([isAuth])
   async createPost(
     @Arg("content") content: PostInput,
     @Ctx() { req }: MyContext

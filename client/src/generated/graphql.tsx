@@ -16,7 +16,6 @@ export type Scalars = {
 
 export type Query = {
   __typename?: "Query";
-  hello: Scalars["String"];
   posts: Array<Post>;
   post?: Maybe<Post>;
   me?: Maybe<User>;
@@ -28,17 +27,21 @@ export type QueryPostArgs = {
 
 export type Post = {
   __typename?: "Post";
-  id: Scalars["Int"];
+  id: Scalars["Float"];
+  creatorId: Scalars["Float"];
+  title: Scalars["String"];
+  text: Scalars["String"];
+  points: Scalars["Float"];
   createdAt: Scalars["String"];
   updatedAt: Scalars["String"];
-  title: Scalars["String"];
 };
 
 export type User = {
   __typename?: "User";
-  id: Scalars["Int"];
+  id: Scalars["Float"];
   username: Scalars["String"];
   email: Scalars["String"];
+  posts: Array<Post>;
   createdAt: Scalars["String"];
   updatedAt: Scalars["String"];
 };
@@ -46,7 +49,7 @@ export type User = {
 export type Mutation = {
   __typename?: "Mutation";
   createPost: Post;
-  updateTitlePost?: Maybe<Post>;
+  updatePost?: Maybe<Post>;
   deletePost: Scalars["Boolean"];
   register: UserResponse;
   login: UserResponse;
@@ -56,10 +59,10 @@ export type Mutation = {
 };
 
 export type MutationCreatePostArgs = {
-  title: Scalars["String"];
+  content: PostInput;
 };
 
-export type MutationUpdateTitlePostArgs = {
+export type MutationUpdatePostArgs = {
   title?: Maybe<Scalars["String"]>;
   id: Scalars["Int"];
 };
@@ -84,6 +87,11 @@ export type MutationForgotPasswordArgs = {
 export type MutationChangePasswordArgs = {
   newPassword: Scalars["String"];
   token: Scalars["String"];
+};
+
+export type PostInput = {
+  title: Scalars["String"];
+  text: Scalars["String"];
 };
 
 export type UserResponse = {
@@ -116,7 +124,7 @@ export type PostInfoFragment = { __typename?: "Post" } & Pick<
 
 export type RegularUserFragment = { __typename?: "User" } & Pick<
   User,
-  "id" | "username"
+  "id" | "username" | "email"
 >;
 
 export type UserResponseFragment = { __typename?: "UserResponse" } & {
@@ -134,6 +142,17 @@ export type ChangePasswordMutation = { __typename?: "Mutation" } & {
     errors?: Maybe<Array<{ __typename?: "FieldError" } & InputErrorFragment>>;
     user?: Maybe<{ __typename?: "User" } & RegularUserFragment>;
   };
+};
+
+export type CreatePostMutationVariables = Exact<{
+  content: PostInput;
+}>;
+
+export type CreatePostMutation = { __typename?: "Mutation" } & {
+  createPost: { __typename?: "Post" } & Pick<
+    Post,
+    "id" | "creatorId" | "title" | "text" | "points" | "createdAt" | "updatedAt"
+  >;
 };
 
 export type ForgotPasswordMutationVariables = Exact<{
@@ -207,6 +226,7 @@ export const RegularUserFragmentDoc = gql`
   fragment RegularUser on User {
     id
     username
+    email
   }
 `;
 export const UserResponseFragmentDoc = gql`
@@ -241,6 +261,25 @@ export function useChangePasswordMutation() {
     ChangePasswordMutation,
     ChangePasswordMutationVariables
   >(ChangePasswordDocument);
+}
+export const CreatePostDocument = gql`
+  mutation CreatePost($content: PostInput!) {
+    createPost(content: $content) {
+      id
+      creatorId
+      title
+      text
+      points
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export function useCreatePostMutation() {
+  return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(
+    CreatePostDocument
+  );
 }
 export const ForgotPasswordDocument = gql`
   mutation ForgotPassword($email: String!) {

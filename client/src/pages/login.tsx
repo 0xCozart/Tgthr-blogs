@@ -21,8 +21,6 @@ const Login: React.FC<{}> = ({}) => {
       <Formik
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async ({ usernameOrEmail, password }, { setErrors }) => {
-          // Can simply pass in register(values) since the keys in
-          // the value objects match but practice.
           const response = await login({
             usernameOrEmail,
             password,

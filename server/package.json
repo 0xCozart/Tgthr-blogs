@@ -51,12 +51,5 @@
     "reflect-metadata": "^0.1.13",
     "type-graphql": "^1.0.0",
     "typeorm": "^0.2.26"
-  },
-  "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
-    ]
   }
 }
