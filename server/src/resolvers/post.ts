@@ -8,6 +8,8 @@ import {
   Field,
   Ctx,
   UseMiddleware,
+  FieldResolver,
+  Root,
 } from "type-graphql";
 import { getConnection } from "typeorm";
 
@@ -22,8 +24,27 @@ class PostInput {
   @Field()
   text: string;
 }
-@Resolver()
+@Resolver(Post)
 export class PostResolver {
+  @Query(() => Post, { nullable: true })
+  async post(
+    // "id" argument used in SDL like so {post(id:arg){...}}
+    @Arg("id", () => Int) id: number // <-- the id here is what we use in source
+  ): Promise<Post | undefined> {
+    return await Post.findOne(id);
+  }
+
+  /* ---------------------TODO---------------------------
+   * Create a regex util to properly parse through and end
+   * on a word, followed by elispses.
+   *
+   * slice method will do for now
+   */
+  @FieldResolver(() => String)
+  textSnippet(@Root() root: Post) {
+    return root.text.slice(0, 50);
+  }
+
   @Query(() => [Post])
   async posts(
     @Arg("limit", () => Int) limit: number,
@@ -47,14 +68,6 @@ export class PostResolver {
 
     // executes SQL
     return queryBuilder.getMany();
-  }
-
-  @Query(() => Post, { nullable: true })
-  async post(
-    // "id" argument used in SDL like so {post(id:arg){...}}
-    @Arg("id", () => Int) id: number // <-- the id here is what we use in source
-  ): Promise<Post | undefined> {
-    return await Post.findOne(id);
   }
 
   @Mutation(() => Post)

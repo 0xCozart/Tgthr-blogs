@@ -1,0 +1,8 @@
+fragment PostInfoWithTextSnippets on Post {
+  id
+  title
+  textSnippet
+  creatorId
+  createdAt
+  updatedAt
+}
