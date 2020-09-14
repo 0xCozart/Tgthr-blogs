@@ -34,6 +34,8 @@ import connectRedis from "connect-redis";
 // Cors
 import cors from "cors";
 
+import path from "path";
+
 const main = async () => {
   const connection = await createConnection({
     type: "postgres",
@@ -42,8 +44,11 @@ const main = async () => {
     password: POSTGRES_PASSWORD,
     logging: true,
     synchronize: true,
+    migrations: [path.join(__dirname, "./migrations/*")],
     entities: [User, Post],
   });
+
+  await connection.runMigrations();
 
   const app = express();
 

@@ -9,7 +9,7 @@ import {
   Ctx,
   UseMiddleware,
 } from "type-graphql";
-import { getConnection, QueryBuilder } from "typeorm";
+import { getConnection } from "typeorm";
 
 import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
@@ -26,7 +26,7 @@ class PostInput {
 export class PostResolver {
   @Query(() => [Post])
   async posts(
-    @Arg("limit") limit: number,
+    @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, {
       nullable: true,
     })
