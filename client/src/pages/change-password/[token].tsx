@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
 import { Formik, Form } from "formik";
@@ -12,10 +11,12 @@ import Wrapper from "../../components/Wrapper";
 import { toErrorMap } from "../../utils/toErrorMap";
 import InputField from "../../components/InputField";
 
-const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
+const ChangePassword: React.FC<{}> = () => {
   const router = useRouter();
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
+  const token =
+    typeof router.query.token === "string" ? router.query.token : "";
 
   return (
     <Wrapper variant="small">
@@ -26,8 +27,8 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
             console.log(newPassword);
             console.log(verifyPassword);
             const response = await changePassword({
-              token,
               newPassword,
+              token,
             });
 
             if (response.data?.changePassword.errors) {
@@ -83,13 +84,6 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
       </Formik>
     </Wrapper>
   );
-};
-
-ChangePassword.getInitialProps = ({ query }) => {
-  console.log(query);
-  return {
-    token: query.token as string,
-  };
 };
 
 export default withUrqlClient(urqlClient, { ssr: false })(ChangePassword);

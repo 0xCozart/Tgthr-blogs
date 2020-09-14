@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
 import { Formik, Form } from "formik";
-import { Box, Flex, Button, Link } from "@chakra-ui/core";
-import NextLink from "next/link";
+import { Box, Flex, Button } from "@chakra-ui/core";
 
 import urqlClient from "../middleware/urqlClient";
 import Wrapper from "../components/Wrapper";
@@ -41,11 +40,6 @@ const ForgotPassword: React.FC<{}> = () => {
                 >
                   forgot password
                 </Button>
-                <Box ml={"auto"}>
-                  <NextLink href={"/forgot-password"}>
-                    <Link opacity={0.5}>forgot password</Link>
-                  </NextLink>
-                </Box>
               </Flex>
             </Form>
           )

@@ -9,7 +9,7 @@ import {
   Ctx,
   UseMiddleware,
 } from "type-graphql";
-import { getConnection } from "typeorm";
+import { getConnection, QueryBuilder } from "typeorm";
 
 import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
@@ -25,8 +25,28 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  async posts(): Promise<Post[]> {
-    return Post.find();
+  async posts(
+    @Arg("limit") limit: number,
+    @Arg("cursor", () => String, {
+      nullable: true,
+    })
+    cursor: string | null
+  ): Promise<Post[]> {
+    const realLimit = Math.min(50, limit);
+    const queryBuilder = getConnection()
+      .getRepository(Post)
+      .createQueryBuilder("post")
+      // need to wrap in double quotes to keep string exact
+      .orderBy('"createdAt"', "DESC")
+      .take(realLimit);
+
+    if (cursor)
+      queryBuilder.where('"createdAt" > :cursor', {
+        cursor: new Date(parseInt(cursor)),
+      });
+
+    // executes SQL
+    return queryBuilder.getMany();
   }
 
   @Query(() => Post, { nullable: true })
