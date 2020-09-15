@@ -9,6 +9,7 @@ import {
 } from "../generated/graphql";
 import { configuredUpdateQuery } from "./configuredUpdateQuery";
 import errorExchange from "../middleware/errorExchange";
+import { cursorPagination } from "./cursorPagination";
 
 const urqlClient = (ssrExchange: any) => ({
   url: "http://localhost:5000/graphql",
@@ -18,6 +19,11 @@ const urqlClient = (ssrExchange: any) => ({
   exchanges: [
     dedupExchange,
     cacheExchange({
+      resolvers: {
+        Query: {
+          posts: cursorPagination(),
+        },
+      },
       updates: {
         Mutation: {
           login: (_result, args, cache, info) => {
