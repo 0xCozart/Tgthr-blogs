@@ -1,5 +1,8 @@
 query PostsSnippets($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
-    ...PostInfoWithTextSnippets
+    hasMore
+    posts {
+      ...PostInfoWithTextSnippets
+    }
   }
 }

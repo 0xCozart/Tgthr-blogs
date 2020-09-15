@@ -10,6 +10,7 @@ import {
   UseMiddleware,
   FieldResolver,
   Root,
+  ObjectType,
 } from "type-graphql";
 import { getConnection } from "typeorm";
 
@@ -24,6 +25,15 @@ class PostInput {
   @Field()
   text: string;
 }
+
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+  @Field()
+  hasMore: boolean;
+}
+
 @Resolver(Post)
 export class PostResolver {
   @Query(() => Post, { nullable: true })
@@ -35,39 +45,49 @@ export class PostResolver {
   }
 
   /* ---------------------TODO---------------------------
-   * Create a regex util to properly parse through and end
-   * on a word, followed by elispses.
+   * Create a regex util to properly parse and cut at a word,
+   * then followed by elispses.
    *
-   * slice method will do for now
+   * slice will do for now
    */
   @FieldResolver(() => String)
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 50);
   }
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, {
       nullable: true,
     })
     cursor: string | null
-  ): Promise<Post[]> {
+  ): Promise<PaginatedPosts> {
+    // Not optimal for further feature extension,
+    // currently using it to solve pagination problem
     const realLimit = Math.min(50, limit);
+    const realLimitPlusOne = realLimit + 1;
+
     const queryBuilder = getConnection()
       .getRepository(Post)
       .createQueryBuilder("post")
       // need to wrap in double quotes to keep string exact
       .orderBy('"createdAt"', "DESC")
-      .take(realLimit);
+      .take(realLimitPlusOne);
 
     if (cursor)
-      queryBuilder.where('"createdAt" > :cursor', {
+      queryBuilder.where('"createdAt" < :cursor', {
         cursor: new Date(parseInt(cursor)),
       });
 
     // executes SQL
-    return queryBuilder.getMany();
+    const posts = await queryBuilder.getMany();
+    console.log(posts.length === realLimitPlusOne);
+    //
+    return {
+      posts: posts.slice(0, realLimit),
+      hasMore: posts.length === realLimitPlusOne,
+    };
   }
 
   @Mutation(() => Post)

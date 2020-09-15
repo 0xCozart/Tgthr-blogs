@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
-import { Link, Stack, Box, Heading, Text, Flex, Button } from "@chakra-ui/core";
+import { Link, Stack, Heading, Flex, Button } from "@chakra-ui/core";
 
 import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
+import CardBox from "../components/CardBox";
 
 const Index = () => {
   const [variables, setVariables] = useState({
-    limit: 10,
+    limit: 50,
     cursor: null as null | string | undefined,
   });
   const [{ data, fetching }] = usePostsSnippetsQuery({
@@ -19,14 +20,7 @@ const Index = () => {
   if (!fetching && !data) {
     return <div>getting posts failed for some reason...</div>;
   }
-
-  const handleSubmit = () => {
-    setVariables({
-      limit: 10,
-      cursor: data?.posts[data.posts.length - 1].createdAt,
-    });
-  };
-
+  console.log(data?.posts.hasMore);
   return (
     <Layout>
       <Flex align={"center"}>
@@ -36,22 +30,28 @@ const Index = () => {
         </NextLink>
       </Flex>
       <br />
-      {!data && fetching ? (
+      {data && fetching ? (
         <div>loading...</div>
       ) : (
-        <Stack spacing={8}>
-          {data!.posts.map((post) => (
-            <Box p={post.id} shadow="md" borderWidth="1px">
-              <Heading fontSize="l">{post.title}</Heading>
-              <Text mt={4}>{post.textSnippet}...</Text>
-            </Box>
+        <Stack>
+          {data!.posts.posts.map((post) => (
+            <CardBox
+              key={post.id}
+              title={post.title}
+              desc={`${post.textSnippet},  ${post.id}`}
+            />
           ))}
         </Stack>
       )}
-      {data ? (
+      {data && data.posts.hasMore ? (
         <Flex>
           <Button
-            onClick={() => handleSubmit()}
+            onClick={() =>
+              setVariables({
+                limit: variables.limit,
+                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+              })
+            }
             isLoading={fetching}
             m="auto"
             my={8}

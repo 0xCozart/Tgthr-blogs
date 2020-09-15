@@ -1,15 +1,10 @@
 import { stringifyVariables } from "@urql/core";
 import { Resolver } from "@urql/exchange-graphcache";
 
-export interface PaginationParams {
-  cursorArgument?: string;
-}
-
 export const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
     const { parentKey: entityKey, fieldName } = info;
-
-    // grabs all field in cache <posts, MeQuery>
+    // grabs all field in cache: current auto queries = <posts, MeQuery>
     const allFields = cache.inspectFields(entityKey);
 
     // filters down to only <posts>
@@ -20,82 +15,49 @@ export const cursorPagination = (): Resolver => {
     if (size === 0) {
       return undefined;
     }
-
+    ///////////////////////////////////////////////////////////////////////////h
     /*
-     * These lines check if the current <post> query (with variables) results
+     * Checks if the current <post> query (with variables) results
      * are in the cache.
      *
-     * If so sets the partial property on info to
-     *
-     *
+     * If in cache, sets partial to false.
      */
     const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
-    const isItInTheCache = cache.resolveFieldByKey(entityKey, fieldKey);
+    const isItInTheCache = cache.resolve(
+      cache.resolveFieldByKey(entityKey, fieldKey) as string,
+      "posts"
+    );
     info.partial = !isItInTheCache;
+    ////////////////////////////////////////////////////////////////////////////
 
+    /***************************************************************************
+     * Nested objects cause a query
+     *
+     *
+     *
+     ****************************************************************************/
+
+    let hasMore = true;
     // appends and returns result set
     const results: string[] = [];
     fieldInfos.forEach((fieldInfo) => {
-      const data = cache.resolveFieldByKey(
+      const key = cache.resolveFieldByKey(
         entityKey,
         fieldInfo.fieldKey
-      ) as string[];
-      results.push(...data);
+      ) as string;
+
+      const responsePosts = cache.resolve(key, "posts") as string[];
+      const responseHasMore = cache.resolve(key, "hasMore") as boolean;
+
+      if (!responseHasMore) {
+        hasMore = responseHasMore;
+        console.log(hasMore);
+      }
+
+      results.push(...responsePosts);
     });
     // console.log({ results });
 
-    return results;
-
-    // const visited = new Set();
-    // let result: NullArray<string> = [];
-    // let prevOffset: number | null = null;
-
-    // for (let i = 0; i < size; i++) {
-    //   const { fieldKey, arguments: args } = fieldInfos[i];
-    //   if (args === null || !compareArgs(fieldArgs, args)) {
-    //     continue;
-    //   }
-
-    //   const links = cache.resolveFieldByKey(entityKey, fieldKey) as string[];
-    //   const currentOffset = args[cursorArgument];
-
-    //   if (
-    //     links === null ||
-    //     links.length === 0 ||
-    //     typeof currentOffset !== "number"
-    //   ) {
-    //     continue;
-    //   }
-
-    //   if (!prevOffset || currentOffset > prevOffset) {
-    //     for (let j = 0; j < links.length; j++) {
-    //       const link = links[j];
-    //       if (visited.has(link)) continue;
-    //       result.push(link);
-    //       visited.add(link);
-    //     }
-    //   } else {
-    //     const tempResult: NullArray<string> = [];
-    //     for (let j = 0; j < links.length; j++) {
-    //       const link = links[j];
-    //       if (visited.has(link)) continue;
-    //       tempResult.push(link);
-    //       visited.add(link);
-    //     }
-    //     result = [...tempResult, ...result];
-    //   }
-
-    //   prevOffset = currentOffset;
-    // }
-
-    // const hasCurrentPage = cache.resolve(entityKey, fieldName, fieldArgs);
-    // if (hasCurrentPage) {
-    //   return result;
-    // } else if (!(info as any).store.schema) {
-    //   return undefined;
-    // } else {
-    //   info.partial = true;
-    //   return result;
-    // }
+    return { __typename: "PaginatedPosts", hasMore, posts: results };
   };
 };

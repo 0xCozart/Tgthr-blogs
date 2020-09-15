@@ -17,7 +17,7 @@ export type Scalars = {
 export type Query = {
   __typename?: "Query";
   post?: Maybe<Post>;
-  posts: Array<Post>;
+  posts: PaginatedPosts;
   me?: Maybe<User>;
 };
 
@@ -40,6 +40,12 @@ export type Post = {
   createdAt: Scalars["String"];
   updatedAt: Scalars["String"];
   textSnippet: Scalars["String"];
+};
+
+export type PaginatedPosts = {
+  __typename?: "PaginatedPosts";
+  posts: Array<Post>;
+  hasMore: Scalars["Boolean"];
 };
 
 export type User = {
@@ -216,7 +222,9 @@ export type PostsSnippetsQueryVariables = Exact<{
 }>;
 
 export type PostsSnippetsQuery = { __typename?: "Query" } & {
-  posts: Array<{ __typename?: "Post" } & PostInfoWithTextSnippetsFragment>;
+  posts: { __typename?: "PaginatedPosts" } & Pick<PaginatedPosts, "hasMore"> & {
+      posts: Array<{ __typename?: "Post" } & PostInfoWithTextSnippetsFragment>;
+    };
 };
 
 export type PostsQueryVariables = Exact<{
@@ -225,7 +233,9 @@ export type PostsQueryVariables = Exact<{
 }>;
 
 export type PostsQuery = { __typename?: "Query" } & {
-  posts: Array<{ __typename?: "Post" } & PostInfoFragment>;
+  posts: { __typename?: "PaginatedPosts" } & Pick<PaginatedPosts, "hasMore"> & {
+      posts: Array<{ __typename?: "Post" } & PostInfoFragment>;
+    };
 };
 
 export const PostInfoFragmentDoc = gql`
@@ -388,7 +398,10 @@ export function usePostQuery(
 export const PostsSnippetsDocument = gql`
   query PostsSnippets($limit: Int!, $cursor: String) {
     posts(limit: $limit, cursor: $cursor) {
-      ...PostInfoWithTextSnippets
+      hasMore
+      posts {
+        ...PostInfoWithTextSnippets
+      }
     }
   }
   ${PostInfoWithTextSnippetsFragmentDoc}
@@ -405,7 +418,10 @@ export function usePostsSnippetsQuery(
 export const PostsDocument = gql`
   query Posts($limit: Int!, $cursor: String) {
     posts(limit: $limit, cursor: $cursor) {
-      ...PostInfo
+      hasMore
+      posts {
+        ...PostInfo
+      }
     }
   }
   ${PostInfoFragmentDoc}
