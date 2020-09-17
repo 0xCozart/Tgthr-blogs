@@ -68,22 +68,39 @@ export class PostResolver {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
 
+    const replacements: any[] = [realLimitPlusOne];
+
+    if (cursor) replacements.push(new Date(parseInt(cursor)));
+
+    // const posts = await getConnection().query(
+    //   `
+    //   select p.*,
+    //   json_build_object('id', creator.id, 'username', creator.username, 'email', creator.email) creator
+    //   from post post
+    //   inner join public.user on user.id = post."creatorId"
+    //   ${cursor ? `where post."createdAt" < $2` : ""}
+    //   order by post."createdAt" DESC
+    //   limit $1
+    //   `,
+    //   replacements
+    // );
+
     const queryBuilder = getConnection()
       .getRepository(Post)
       .createQueryBuilder("post")
+      // Creates a
+      .innerJoinAndSelect("post.creator", "user", 'user.id = post."creatorId"')
       // need to wrap in double quotes to keep string exact
-      .orderBy('"createdAt"', "DESC")
+      .orderBy("post.createdAt", "DESC")
       .take(realLimitPlusOne);
 
     if (cursor)
-      queryBuilder.where('"createdAt" < :cursor', {
+      queryBuilder.where("post.'createdAt' < :cursor", {
         cursor: new Date(parseInt(cursor)),
       });
 
-    // executes SQL
     const posts = await queryBuilder.getMany();
-    console.log(posts.length === realLimitPlusOne);
-    //
+
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
@@ -134,5 +151,38 @@ export class PostResolver {
   async deletePost(@Arg("id", () => Int) id: number): Promise<Boolean> {
     await Post.delete(id);
     return true;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId", () => Int) postId: number,
+    @Arg("value", () => Int) value: 1 | -1,
+    @Ctx() { req }: MyContext
+  ) {
+    const { userId } = req.session;
+    // try {
+    // await getConnection().transaction(async (tm) => {
+    //   tm.query(
+    //     `
+    // from post
+    // update post
+    // set post.points = post.points + $1
+    // where p.id = $2`,
+    //     [value, postId]
+    //   );
+    // });
+    try {
+      await getConnection().createQueryBuilder().
+      return true;
+    } catch(error) {
+      console.log('vote error:', error);
+      return false
+    }
+
+    // } catch (error) {
+    //   console.log("vote error:", error);
+    //   return false;
+    // }
   }
 }

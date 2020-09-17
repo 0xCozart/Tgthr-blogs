@@ -35,6 +35,7 @@ import connectRedis from "connect-redis";
 import cors from "cors";
 
 import path from "path";
+import { Vote } from "./entities/Vote";
 
 const main = async () => {
   const connection = await createConnection({
@@ -45,7 +46,7 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Post],
+    entities: [User, Post, Vote],
   });
   // await Posts.delete({})
   // await connection.runMigrations();

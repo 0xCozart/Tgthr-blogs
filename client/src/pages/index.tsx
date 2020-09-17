@@ -20,7 +20,6 @@ const Index = () => {
   if (!fetching && !data) {
     return <div>getting posts failed for some reason...</div>;
   }
-  console.log(data?.posts.hasMore);
   return (
     <Layout>
       <Flex align={"center"}>
@@ -38,7 +37,7 @@ const Index = () => {
             <CardBox
               key={post.id}
               title={post.title}
-              desc={`${post.textSnippet},  ${post.id}`}
+              desc={`${post.textSnippet},  ${post.creatorId}`}
             />
           ))}
         </Stack>
@@ -49,6 +48,7 @@ const Index = () => {
             onClick={() =>
               setVariables({
                 limit: variables.limit,
+                // gets the timestamp from the last post loaded to pass as cursor
                 cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
               })
             }

@@ -6,6 +6,8 @@ import {
   Ctx,
   ObjectType,
   Query,
+  FieldResolver,
+  Root,
 } from "type-graphql";
 import argon2 from "argon2";
 import { v4 } from "uuid";
@@ -36,7 +38,7 @@ class UserResponse {
   user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
   // Me: returns currently signed in user or null
   @Query(() => User, { nullable: true })
@@ -74,7 +76,7 @@ export class UserResolver {
         password: hashedPassword,
       }).save();
 
-      * adding a <.returning("*")> method would be an ideal option
+      * adding a <.returning("*")> method would be an ideal method
       * as suggested here: https://github.com/typeorm/typeorm/issues/3490
       */
       const insertUserResult = await getConnection()
@@ -244,5 +246,12 @@ export class UserResolver {
     req.session.userId = user.id;
     // returns user object in grapql
     return { user };
+  }
+
+  @FieldResolver(() => String)
+  email(@Root() user: User, @Ctx() { req }: MyContext) {
+    if (req.session.userId === user.id) return user.email;
+
+    return "";
   }
 }
