@@ -5,4 +5,8 @@ fragment PostInfoWithTextSnippets on Post {
   creatorId
   createdAt
   updatedAt
+  creator {
+    id
+    username
+  }
 }

@@ -10,12 +10,13 @@ import CardBox from "../components/CardBox";
 
 const Index = () => {
   const [variables, setVariables] = useState({
-    limit: 50,
-    cursor: null as null | string | undefined,
+    limit: 15,
+    cursor: null as null | string,
   });
   const [{ data, fetching }] = usePostsSnippetsQuery({
     variables,
   });
+  console.log({ data, fetching });
 
   if (!fetching && !data) {
     return <div>getting posts failed for some reason...</div>;
@@ -29,7 +30,7 @@ const Index = () => {
         </NextLink>
       </Flex>
       <br />
-      {data && fetching ? (
+      {!data && fetching ? (
         <div>loading...</div>
       ) : (
         <Stack>
@@ -37,7 +38,7 @@ const Index = () => {
             <CardBox
               key={post.id}
               title={post.title}
-              desc={`${post.textSnippet},  ${post.creatorId}`}
+              desc={`${post.textSnippet},  ${post.creator?.username}`}
             />
           ))}
         </Stack>
