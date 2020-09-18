@@ -7,6 +7,7 @@ import express from "express";
 import { createConnection } from "typeorm";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
+import { Vote } from "./entities/Vote";
 
 // constants
 import {
@@ -35,7 +36,6 @@ import connectRedis from "connect-redis";
 import cors from "cors";
 
 import path from "path";
-import { Vote } from "./entities/Vote";
 
 const main = async () => {
   const connection = await createConnection({

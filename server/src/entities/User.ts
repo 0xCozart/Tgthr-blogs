@@ -33,7 +33,7 @@ export class User extends BaseEntity {
   @OneToMany(() => Post, (post) => post.creatorId)
   posts: Post[];
 
-  @OneToMany(() => Vote, (upvote) => Vote.user)
+  @OneToMany(() => Vote, (vote) => vote.user)
   upvotes: Vote[];
 
   @Field(() => String)

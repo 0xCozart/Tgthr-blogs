@@ -17,6 +17,7 @@ import { getConnection } from "typeorm";
 import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
 import { isAuth } from "../middleware/isAuth";
+import { Vote } from "../entities/Vote";
 
 @InputType()
 class PostInput {
@@ -55,55 +56,49 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
-  @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, {
-      nullable: true,
-    })
-    cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
-    // Not optimal for further feature extension,
-    // currently using it to solve pagination problem
     const realLimit = Math.min(50, limit);
-    const realLimitPlusOne = realLimit + 1;
+    const reaLimitPlusOne = realLimit + 1;
 
-    const replacements: any[] = [realLimitPlusOne];
+    const replacements: any[] = [reaLimitPlusOne];
 
-    if (cursor) replacements.push(new Date(parseInt(cursor)));
+    if (cursor) {
+      replacements.push(new Date(parseInt(cursor)));
+    }
 
-    // const posts = await getConnection().query(
-    //   `
-    //   select p.*,
-    //   json_build_object('id', creator.id, 'username', creator.username, 'email', creator.email) creator
-    //   from post post
-    //   inner join public.user on user.id = post."creatorId"
-    //   ${cursor ? `where post."createdAt" < $2` : ""}
-    //   order by post."createdAt" DESC
-    //   limit $1
-    //   `,
-    //   replacements
-    // );
+    const posts = await getConnection().query(
+      `
+    select p.*
+    from post p
+    ${cursor ? `where p."createdAt" < $2` : ""}
+    order by p."createdAt" DESC
+    limit $1
+    `,
+      replacements
+    );
 
-    const queryBuilder = getConnection()
-      .getRepository(Post)
-      .createQueryBuilder("post")
-      // Creates a
-      .innerJoinAndSelect("post.creator", "user", 'user.id = post."creatorId"')
-      // need to wrap in double quotes to keep string exact
-      .orderBy("post.createdAt", "DESC")
-      .take(realLimitPlusOne);
+    // const qb = getConnection()
+    //   .getRepository(Post)
+    //   .createQueryBuilder("p")
+    //   .innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
+    //   .orderBy('p."createdAt"', "DESC")
+    //   .take(reaLimitPlusOne);
 
-    if (cursor)
-      queryBuilder.where("post.'createdAt' < :cursor", {
-        cursor: new Date(parseInt(cursor)),
-      });
+    // if (cursor) {
+    //   qb.where('p."createdAt" < :cursor', {
+    //     cursor: new Date(parseInt(cursor)),
+    //   });
+    // }
 
-    const posts = await queryBuilder.getMany();
+    // const posts = await qb.getMany();
+    // console.log("posts: ", posts);
 
     return {
       posts: posts.slice(0, realLimit),
-      hasMore: posts.length === realLimitPlusOne,
+      hasMore: posts.length === reaLimitPlusOne,
     };
   }
 
@@ -160,29 +155,24 @@ export class PostResolver {
     @Arg("value", () => Int) value: 1 | -1,
     @Ctx() { req }: MyContext
   ) {
+    const isUpvote = value !== -1;
+    const realValue = isUpvote ? 1 : -1;
     const { userId } = req.session;
-    // try {
-    // await getConnection().transaction(async (tm) => {
-    //   tm.query(
-    //     `
-    // from post
-    // update post
-    // set post.points = post.points + $1
-    // where p.id = $2`,
-    //     [value, postId]
-    //   );
-    // });
-    try {
-      await getConnection().createQueryBuilder().
-      return true;
-    } catch(error) {
-      console.log('vote error:', error);
-      return false
-    }
 
-    // } catch (error) {
-    //   console.log("vote error:", error);
-    //   return false;
-    // }
+    await getConnection().query(
+      `
+    START TRANSACTION;
+
+    insert into vote ("userId", "postId", "value")
+    values (${userId}, ${postId}, ${realValue});
+
+    update post 
+    set points = points + ${realValue}
+    where id = ${postId};
+
+    COMMIT;`
+    );
+
+    return true;
   }
 }
