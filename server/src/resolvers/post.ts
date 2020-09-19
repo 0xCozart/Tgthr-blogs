@@ -111,7 +111,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware([isAuth])
+  @UseMiddleware(isAuth)
   async createPost(
     @Arg("content") content: PostInput,
     @Ctx() { req }: MyContext
@@ -120,20 +120,10 @@ export class PostResolver {
      * <Post.create({}).save()> : error.code 42601 might be caused by
      * my TZ on linux.
      */
-    const newPost = await getConnection()
-      .createQueryBuilder()
-      .insert()
-      .into(Post)
-      .values({
-        ...content,
-        creatorId: req.session.userId,
-      })
-      .relation(Post, "creator")
-      .of(User)
-      .a.returning("*")
-      .execute();
-
-    return newPost.raw[0];
+    return Post.create({
+      ...content,
+      creatorId: req.session.userId,
+    }).save();
   }
 
   @Mutation(() => Post, { nullable: true })

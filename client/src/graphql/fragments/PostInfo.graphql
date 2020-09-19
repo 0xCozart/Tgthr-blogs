@@ -5,8 +5,4 @@ fragment PostInfo on Post {
   creatorId
   createdAt
   updatedAt
-  creator {
-    id
-    username
-  }
 }

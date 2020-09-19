@@ -1,0 +1,13 @@
+fragment PostInfoWithCreator on Post {
+  id
+  title
+  text
+  creatorId
+  createdAt
+  updatedAt
+  creator {
+    id
+    username
+    email
+  }
+}
