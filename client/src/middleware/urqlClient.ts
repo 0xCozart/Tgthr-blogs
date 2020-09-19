@@ -24,11 +24,19 @@ const urqlClient = (ssrExchange: any) => ({
       },
       resolvers: {
         Query: {
-          posts: cursorPagination(),
+          // posts: cursorPagination(),
         },
       },
       updates: {
         Mutation: {
+          createPost: (_result, args, cache, info) => {
+            console.log("anything");
+            console.log(cache.inspectFields("Query"));
+            cache.invalidate("Query", "posts", {
+              limit: 15,
+              // cursor: null,
+            });
+          },
           login: (_result, args, cache, info) => {
             configuredUpdateQuery<LoginMutation, MeQuery>(
               cache,
@@ -41,6 +49,14 @@ const urqlClient = (ssrExchange: any) => ({
               }
             );
           },
+          logout: (_result, args, cache, info) => {
+            configuredUpdateQuery<LogoutMutation, MeQuery>(
+              cache,
+              { query: MeDocument },
+              _result,
+              () => ({ me: null })
+            );
+          },
           register: (_result, args, cache, info) => {
             configuredUpdateQuery<RegisterMutation, MeQuery>(
               cache,
@@ -51,14 +67,6 @@ const urqlClient = (ssrExchange: any) => ({
 
                 return { me: result.register.user };
               }
-            );
-          },
-          logout: (_result, args, cache, info) => {
-            configuredUpdateQuery<LogoutMutation, MeQuery>(
-              cache,
-              { query: MeDocument },
-              _result,
-              () => ({ me: null })
             );
           },
         },

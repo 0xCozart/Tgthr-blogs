@@ -16,7 +16,6 @@ const Index = () => {
   const [{ data, fetching }] = usePostsSnippetsQuery({
     variables,
   });
-  console.log({ data, fetching });
 
   if (!fetching && !data) {
     return <div>getting posts failed for some reason...</div>;

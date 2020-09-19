@@ -128,7 +128,9 @@ export class PostResolver {
         ...content,
         creatorId: req.session.userId,
       })
-      .returning("*")
+      .relation(Post, "creator")
+      .of(User)
+      .a.returning("*")
       .execute();
 
     return newPost.raw[0];
