@@ -33,15 +33,7 @@ const PostSnippet: React.FC<CardBoxProps> = ({
   };
 
   return (
-    <Flex
-      key={id}
-      p={5}
-      shadow="md"
-      borderWidth="2px"
-      flex="1"
-      rounded="md"
-      m={2}
-    >
+    <Flex p={5} shadow="md" borderWidth="2px" flex="1" rounded="md" m={2}>
       <Flex
         direction="column"
         alignItems="center"

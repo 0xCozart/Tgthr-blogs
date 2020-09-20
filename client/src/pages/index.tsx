@@ -34,7 +34,7 @@ const Index = () => {
       ) : (
         <Stack>
           {data!.posts.posts.map((post) => (
-            <PostSnippet post={post} />
+            <PostSnippet key={post.id} post={post} />
           ))}
         </Stack>
       )}

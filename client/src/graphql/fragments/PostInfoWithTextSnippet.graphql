@@ -4,6 +4,7 @@ fragment PostInfoWithTextSnippets on Post {
   textSnippet
   points
   creatorId
+  voteStatus
   createdAt
   updatedAt
   creator {

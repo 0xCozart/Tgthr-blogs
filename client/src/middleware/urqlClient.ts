@@ -1,12 +1,15 @@
 import { cacheExchange } from "@urql/exchange-graphcache";
 import { dedupExchange, fetchExchange } from "urql";
+import gql from "graphql-tag";
 import {
   LoginMutation,
   LogoutMutation,
   MeDocument,
   MeQuery,
   RegisterMutation,
+  VoteMutationVariables,
 } from "../generated/graphql";
+
 import { configuredUpdateQuery } from "./configuredUpdateQuery";
 import errorExchange from "../middleware/errorExchange";
 import { cursorPagination } from "./cursorPagination";
@@ -29,19 +32,9 @@ const urqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
-          createPost: (_result, args, cache, info) => {
-            const queryField = cache.inspectFields("Query");
-            const fieldInfos = queryField.filter(
-              (info) => info.fieldName === "posts"
-            );
-            // invalidates over every pagination when createPost fires
-            fieldInfos.forEach((fi) => {
-              cache.invalidate("Query", "posts", fi.arguments || {});
-            });
-          },
-          login: (_result, args, cache, info) => {
+          login: (_result, _args, _cache, _info) => {
             configuredUpdateQuery<LoginMutation, MeQuery>(
-              cache,
+              _cache,
               { query: MeDocument },
               _result,
               (result, query) => {
@@ -51,17 +44,17 @@ const urqlClient = (ssrExchange: any) => ({
               }
             );
           },
-          logout: (_result, args, cache, info) => {
+          logout: (_result, _args, _cache, _info) => {
             configuredUpdateQuery<LogoutMutation, MeQuery>(
-              cache,
+              _cache,
               { query: MeDocument },
               _result,
               () => ({ me: null })
             );
           },
-          register: (_result, args, cache, info) => {
+          register: (_result, _args, _cache, _info) => {
             configuredUpdateQuery<RegisterMutation, MeQuery>(
-              cache,
+              _cache,
               { query: MeDocument },
               _result,
               (result, query) => {
@@ -70,6 +63,49 @@ const urqlClient = (ssrExchange: any) => ({
                 return { me: result.register.user };
               }
             );
+          },
+          createPost: (_result, _args, _cache, _info) => {
+            const queryField = _cache.inspectFields("Query");
+            const fieldInfos = queryField.filter(
+              (info) => info.fieldName === "posts"
+            );
+            // invalidates over every pagination when createPost fires
+            fieldInfos.forEach((fi) => {
+              _cache.invalidate("Query", "posts", fi.arguments || {});
+            });
+          },
+          vote: (_result, _args, _cache, _info) => {
+            /*******************************************************
+             * Really don't like the way this is done.              *
+             * ~Get current points from cache using readFragment.   *
+             * Then write to the cache sudo points to give the      *
+             * effect of live updating, instead of being fed        *
+             * through the backend.~                                *
+             * Saves time and space complexity but I don't like it. *                     *
+             * Looking for alternatives.                            *
+             *******************************************************/
+
+            const { postId, value } = _args as VoteMutationVariables;
+            const data = _cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  points
+                }
+              `,
+              { id: postId } as any
+            );
+            if (data) {
+              const newPoints = (data.points as number) + value;
+              _cache.writeFragment(
+                gql`
+                  fragment __ on Post {
+                    points
+                  }
+                `,
+                { id: postId, points: newPoints } as any
+              );
+            }
           },
         },
       },
