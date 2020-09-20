@@ -24,17 +24,19 @@ const urqlClient = (ssrExchange: any) => ({
       },
       resolvers: {
         Query: {
-          // posts: cursorPagination(),
+          posts: cursorPagination(),
         },
       },
       updates: {
         Mutation: {
           createPost: (_result, args, cache, info) => {
-            console.log("anything");
-            console.log(cache.inspectFields("Query"));
-            cache.invalidate("Query", "posts", {
-              limit: 15,
-              // cursor: null,
+            const queryField = cache.inspectFields("Query");
+            const fieldInfos = queryField.filter(
+              (info) => info.fieldName === "posts"
+            );
+            // invalidates over every pagination when createPost fires
+            fieldInfos.forEach((fi) => {
+              cache.invalidate("Query", "posts", fi.arguments || {});
             });
           },
           login: (_result, args, cache, info) => {

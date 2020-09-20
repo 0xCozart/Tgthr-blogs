@@ -6,7 +6,7 @@ import { Link, Stack, Heading, Flex, Button } from "@chakra-ui/core";
 import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
-import CardBox from "../components/CardBox";
+import PostSnippet from "../components/PostSnippet";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -34,11 +34,7 @@ const Index = () => {
       ) : (
         <Stack>
           {data!.posts.posts.map((post) => (
-            <CardBox
-              key={post.id}
-              title={post.title}
-              desc={`${post.textSnippet},  ${post.creator?.username}`}
-            />
+            <PostSnippet post={post} />
           ))}
         </Stack>
       )}

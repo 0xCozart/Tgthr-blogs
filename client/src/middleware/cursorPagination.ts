@@ -30,13 +30,6 @@ export const cursorPagination = (): Resolver => {
     info.partial = !isItInTheCache;
     ////////////////////////////////////////////////////////////////////////////
 
-    /***************************************************************************
-     * Nested objects cause a query
-     *
-     *
-     *
-     ****************************************************************************/
-
     let hasMore = true;
     // appends and returns result set
     const results: string[] = [];
@@ -51,12 +44,10 @@ export const cursorPagination = (): Resolver => {
 
       if (!responseHasMore) {
         hasMore = responseHasMore;
-        console.log(hasMore);
       }
 
       results.push(...responsePosts);
     });
-    // console.log({ results });
 
     return { __typename: "PaginatedPosts", hasMore, posts: results };
   };
