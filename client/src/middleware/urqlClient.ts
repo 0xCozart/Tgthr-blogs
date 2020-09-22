@@ -10,9 +10,10 @@ import {
   VoteMutationVariables,
 } from "../generated/graphql";
 
-import { configuredUpdateQuery } from "./configuredUpdateQuery";
 import errorExchange from "../middleware/errorExchange";
 import { cursorPagination } from "./cursorPagination";
+import configuredUpdateQuery from "./configuredUpdateQuery";
+import invalidatePostsCache from "./invalidatePostCache";
 
 const urqlClient = (ssrExchange: any) => ({
   url: "http://localhost:5000/graphql",
@@ -43,6 +44,15 @@ const urqlClient = (ssrExchange: any) => ({
                 return { me: result.login.user };
               }
             );
+            invalidatePostsCache(_cache);
+            // const queryField = _cache.inspectFields("Query");
+            // const fieldInfos = queryField.filter(
+            //   (info) => info.fieldName === "posts"
+            // );
+            // // invalidates over every pagination when createPost fires
+            // fieldInfos.forEach((fi) => {
+            //   _cache.invalidate("Query", "posts", fi.arguments || {});
+            // });
           },
           logout: (_result, _args, _cache, _info) => {
             configuredUpdateQuery<LogoutMutation, MeQuery>(
@@ -51,6 +61,7 @@ const urqlClient = (ssrExchange: any) => ({
               _result,
               () => ({ me: null })
             );
+            invalidatePostsCache(_cache);
           },
           register: (_result, _args, _cache, _info) => {
             configuredUpdateQuery<RegisterMutation, MeQuery>(
@@ -91,19 +102,25 @@ const urqlClient = (ssrExchange: any) => ({
                 fragment _ on Post {
                   id
                   points
+                  voteStatus
                 }
               `,
               { id: postId } as any
             );
             if (data) {
-              const newPoints = (data.points as number) + value;
+              if (data.voteStatus === value) return;
+              console.log({ data, value, _cache });
+              const newPoints =
+                (data.points as number) + (!data.voteStatus ? 1 : 2) * value;
               _cache.writeFragment(
                 gql`
                   fragment __ on Post {
+                    id
                     points
+                    voteStatus
                   }
                 `,
-                { id: postId, points: newPoints } as any
+                { id: postId, points: newPoints, voteStatus: value } as any
               );
             }
           },

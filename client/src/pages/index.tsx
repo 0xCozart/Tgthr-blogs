@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
-import { Link, Stack, Heading, Flex, Button } from "@chakra-ui/core";
+import {
+  ThemeProvider,
+  Link,
+  Stack,
+  Heading,
+  Flex,
+  Button,
+} from "@chakra-ui/core";
 
 import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery } from "../generated/graphql";
@@ -16,6 +23,7 @@ const Index = () => {
   const [{ data, fetching }] = usePostsSnippetsQuery({
     variables,
   });
+  console.log({ data });
 
   if (!fetching && !data) {
     return <div>getting posts failed for some reason...</div>;
@@ -60,4 +68,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(urqlClient, { ssr: true })(Index);
+export default withUrqlClient(urqlClient, { ssr: false })(Index);

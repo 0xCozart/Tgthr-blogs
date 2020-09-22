@@ -1,6 +1,6 @@
 import { Cache, QueryInput } from "@urql/exchange-graphcache";
 
-export function configuredUpdateQuery<Result, Query>(
+function configuredUpdateQuery<Result, Query>(
   cache: Cache,
   qi: QueryInput,
   result: any,
@@ -8,3 +8,5 @@ export function configuredUpdateQuery<Result, Query>(
 ) {
   return cache.updateQuery(qi, (data) => fn(result, data as any) as any);
 }
+
+export default configuredUpdateQuery;

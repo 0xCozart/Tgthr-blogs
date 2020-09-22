@@ -62,16 +62,11 @@ export class PostResolver {
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
     @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
-    const { userId } = req.session;
+    // console.log({ posts: req.session });
+
+    // const { userId } = req.session;
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
-
-    const replacements: any[] = [reaLimitPlusOne, userId];
-
-    if (cursor) {
-      replacements.push(new Date(parseInt(cursor)));
-    }
-
     const posts = await getConnection().query(
       `
         select p.*,
@@ -81,11 +76,16 @@ export class PostResolver {
           'email', u.email,
           'createdAt', u."createdAt",
           'updatedAt', u."updatedAt"
-        ) creator, ${
-          userId
-            ? `(select value from vote where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
-            : 'null as "voteStatus"'
-        }
+        ) creator, 
+        
+            ${
+              (req.session.userId as number)
+                ? `(select value from vote where "userId" = ${
+                    req.session.userId as number
+                  } and "postId" = p.id) "voteStatus"`
+                : `null as "voteStatus"`
+            }
+            
         from post p 
         inner join public.user u on u.id = p."creatorId"
         ${cursor ? `where p."createdAt" < ${parseInt(cursor)}` : ""}
@@ -126,6 +126,7 @@ export class PostResolver {
      * <Post.create({}).save()> : error.code 42601 might be caused by
      * my TZ on linux.
      */
+    console.log({ test: req.session.userId });
     return Post.create({
       ...content,
       creatorId: req.session.userId,
@@ -158,7 +159,7 @@ export class PostResolver {
   @UseMiddleware(isAuth)
   async vote(
     @Arg("postId", () => Int) postId: number,
-    @Arg("value", () => Int) value: 1 | -1,
+    @Arg("value", () => Int) value: number,
     @Ctx() { req }: MyContext
   ) {
     try {
@@ -192,7 +193,7 @@ export class PostResolver {
         await getConnection().transaction(async (trxManager) => {
           await trxManager.query(
             `
-              insert into vote ("userId", "postId", "value")
+              insert into vote ("userId", "postId", value)
               values (${userId}, ${postId}, ${value});
             `
           );
