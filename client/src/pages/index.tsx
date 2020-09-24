@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
-import {
-  ThemeProvider,
-  Link,
-  Stack,
-  Heading,
-  Flex,
-  Button,
-} from "@chakra-ui/core";
+import { Link, Stack, Heading, Flex, Button } from "@chakra-ui/core";
 
 import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery } from "../generated/graphql";
@@ -17,7 +10,7 @@ import PostSnippet from "../components/PostSnippet";
 
 const Index = () => {
   const [variables, setVariables] = useState({
-    limit: 1,
+    limit: 5,
     cursor: null as null | string,
   });
   const [{ data, fetching }] = usePostsSnippetsQuery({

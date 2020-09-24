@@ -95,7 +95,7 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
             },
             vote: (_result, _args, _cache, _info) => {
               /*******************************************************
-               * Really don't like the way this is done.              *
+               * Don't like the way this is done.              *
                * ~Get current points from cache using readFragment.   *
                * Then write to the cache sudo points to give the      *
                * effect of live updating, instead of being fed        *

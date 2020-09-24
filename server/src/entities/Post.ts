@@ -46,10 +46,10 @@ export class Post extends BaseEntity {
   votes: Vote[];
 
   @Field(() => String)
-  @CreateDateColumn({ type: "timestamp without time zone" })
+  @CreateDateColumn()
   createdAt: Date;
 
   @Field(() => String)
-  @UpdateDateColumn({ type: "timestamp without time zone" })
+  @UpdateDateColumn()
   updatedAt: Date;
 }

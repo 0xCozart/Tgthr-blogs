@@ -18,6 +18,7 @@ import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
 import { isAuth } from "../middleware/isAuth";
 import { Vote } from "../entities/Vote";
+import { CLIENT_RENEG_LIMIT } from "tls";
 
 @InputType()
 class PostInput {
@@ -64,7 +65,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     // console.log({ posts: req.session });
 
-    // const { userId } = req.session;
+    const { userId } = req.session;
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
 
@@ -80,16 +81,14 @@ export class PostResolver {
         ) creator, 
         
             ${
-              (req.session.userId as number)
-                ? `(select value from vote where "userId" = ${
-                    req.session.userId as number
-                  } and "postId" = p.id) "voteStatus"`
+              req.session.userId
+                ? `(select value from vote where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
                 : `null as "voteStatus"`
             }
             
         from post p 
         inner join public.user u on u.id = p."creatorId"
-        ${cursor ? `where p."createdAt" < ${new Date(parseInt(cursor))}` : ""}
+        ${cursor ? `where p."createdAt" > ${new Date(parseInt(cursor))}` : ""}
         order by p."createdAt" DESC
         limit ${reaLimitPlusOne}
       `
