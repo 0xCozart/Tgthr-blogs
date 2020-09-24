@@ -31,18 +31,6 @@ const PostSnippet: React.FC<CardBoxProps> = ({
     setVoteLoading("not-loading");
   };
 
-  // const handleDownVote = async () => {
-  //   setVoteLoading("downvote-loading");
-  //   await vote({ value: -1, postId: id });
-  //   setVoteLoading("not-loading");
-  // };
-
-  // const handleUpVote = async () => {
-  //   setVoteLoading("upvote-loading");
-  //   await vote({ value: 1, postId: id });
-  //   setVoteLoading("not-loading");
-  // };
-
   return (
     <Flex p={5} shadow="md" borderWidth="2px" flex="1" rounded="md" m={2}>
       <Flex

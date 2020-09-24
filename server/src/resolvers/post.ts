@@ -67,6 +67,7 @@ export class PostResolver {
     // const { userId } = req.session;
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
+
     const posts = await getConnection().query(
       `
         select p.*,
@@ -88,7 +89,7 @@ export class PostResolver {
             
         from post p 
         inner join public.user u on u.id = p."creatorId"
-        ${cursor ? `where p."createdAt" < ${parseInt(cursor)}` : ""}
+        ${cursor ? `where p."createdAt" < ${new Date(parseInt(cursor))}` : ""}
         order by p."createdAt" DESC
         limit ${reaLimitPlusOne}
       `

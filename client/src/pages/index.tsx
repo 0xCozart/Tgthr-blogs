@@ -17,7 +17,7 @@ import PostSnippet from "../components/PostSnippet";
 
 const Index = () => {
   const [variables, setVariables] = useState({
-    limit: 15,
+    limit: 1,
     cursor: null as null | string,
   });
   const [{ data, fetching }] = usePostsSnippetsQuery({
@@ -68,4 +68,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(urqlClient, { ssr: false })(Index);
+export default withUrqlClient(urqlClient, { ssr: true })(Index);

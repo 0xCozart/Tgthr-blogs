@@ -37,10 +37,10 @@ export class User extends BaseEntity {
   votes: Vote[];
 
   @Field(() => String)
-  @CreateDateColumn()
-  createdAt = Date;
+  @CreateDateColumn({ type: "timestamp without time zone" })
+  createdAt: Date;
 
   @Field(() => String)
-  @UpdateDateColumn()
-  updatedAt = Date;
+  @UpdateDateColumn({ type: "timestamp without time zone" })
+  updatedAt: Date;
 }

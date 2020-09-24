@@ -48,7 +48,10 @@ const main = async () => {
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [User, Post, Vote],
   });
-  // await Posts.delete({})
+  // await Vote.delete({});
+  // await Post.delete({});
+  // await User.delete({});
+
   // await connection.runMigrations();
 
   const app = express();
