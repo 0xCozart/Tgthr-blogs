@@ -18,7 +18,6 @@ import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
 import { isAuth } from "../middleware/isAuth";
 import { Vote } from "../entities/Vote";
-import { CLIENT_RENEG_LIMIT } from "tls";
 
 @InputType()
 class PostInput {
@@ -43,7 +42,7 @@ export class PostResolver {
     // "id" argument used in SDL like so {post(id:arg){...}}
     @Arg("id", () => Int) id: number // <-- the id here is what we use in source
   ): Promise<Post | undefined> {
-    return await Post.findOne(id);
+    return await Post.findOne(id, { relations: ["creator"] });
   }
 
   /* ---------------------TODO---------------------------
@@ -78,15 +77,15 @@ export class PostResolver {
           'email', u.email,
           'createdAt', u."createdAt",
           'updatedAt', u."updatedAt"
-        ) creator, 
-        
+        ) creator,
+
             ${
               req.session.userId
                 ? `(select value from vote where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
                 : `null as "voteStatus"`
             }
-            
-        from post p 
+
+        from post p
         inner join public.user u on u.id = p."creatorId"
         ${cursor ? `where p."createdAt" > ${new Date(parseInt(cursor))}` : ""}
         order by p."createdAt" DESC
@@ -98,8 +97,7 @@ export class PostResolver {
     //   .getRepository(Post)
     //   .createQueryBuilder("p")
     //   .innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
-    //   .orderBy('p."createdAt"', "DESC")
-    //   .take(reaLimitPlusOne);
+    //   .orderBy('p."createdAt"', "DESC");
 
     // if (cursor) {
     //   qb.where('p."createdAt" < :cursor', {
@@ -107,7 +105,7 @@ export class PostResolver {
     //   });
     // }
 
-    // const posts = await qb.getMany();
+    // const posts = await qb.take(reaLimitPlusOne).getMany();
     // console.log("posts: ", posts);
 
     return {

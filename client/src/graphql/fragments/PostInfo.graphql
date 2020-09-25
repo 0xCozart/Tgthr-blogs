@@ -4,6 +4,11 @@ fragment PostInfo on Post {
   text
   points
   creatorId
+  creator {
+    id
+    username
+    email
+  }
   voteStatus
   createdAt
   updatedAt

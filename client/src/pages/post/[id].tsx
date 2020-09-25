@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import urqlClient from "../../middleware/urqlClient";
 import { usePostQuery } from "../../generated/graphql";
 import Layout from "../../components/Layout";
+import PostFull from "../../components/PostFull";
 
 const Post = ({}) => {
   const router = useRouter();
@@ -15,15 +16,29 @@ const Post = ({}) => {
       id: intId,
     },
   });
+  console.log({ data });
 
-  if (fetching) {
+  if (!data && fetching) {
     return (
       <Layout>
         <div>loading...</div>
       </Layout>
     );
   }
-  return <Layout>{data?.post?.text}</Layout>;
+
+  if (!data?.post) {
+    return (
+      <Layout>
+        <div>Cannot find post... :(</div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <PostFull post={data.post} />
+    </Layout>
+  );
 };
 
 export default withUrqlClient(urqlClient, { ssr: true })(Post);

@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { Box, Heading, Text, Flex, IconButton, Link } from "@chakra-ui/core";
-import NextLink from "next/link";
-import {
-  PostInfoWithTextSnippetsFragment,
-  useVoteMutation,
-} from "../generated/graphql";
+import { PostInfoFragment, useVoteMutation } from "../generated/graphql";
+
 interface CardBoxProps {
-  post: PostInfoWithTextSnippetsFragment;
+  post: PostInfoFragment;
 }
 
-const PostSnippet: React.FC<CardBoxProps> = ({
-  post: { id, title, textSnippet, points, voteStatus },
+const PostFull: React.FC<CardBoxProps> = ({
+  post: { id, title, text, points, voteStatus },
 }) => {
   const [{}, vote] = useVoteMutation();
   const [voteLoading, setVoteLoading] = useState<
@@ -61,15 +58,11 @@ const PostSnippet: React.FC<CardBoxProps> = ({
         />
       </Flex>
       <Box>
-        <NextLink href={`/post/[id]`} as={`/post/${id}`}>
-          <Link>
-            <Heading fontSize="xl">{title}</Heading>
-          </Link>
-        </NextLink>
-        <Text mt={4}>{textSnippet}</Text>
+        <Heading fontSize="xl">{title}</Heading>
+        <Text mt={4}>{text}</Text>
       </Box>
     </Flex>
   );
 };
 
-export default PostSnippet;
+export default PostFull;
