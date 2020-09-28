@@ -35,9 +35,9 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
           PaginatedPosts: () => null,
         },
         resolvers: {
-          Query: {
-            posts: cursorPagination(),
-          },
+          // Query: {
+          //   posts: cursorPagination(),
+          // },
         },
         updates: {
           Mutation: {
@@ -84,6 +84,9 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
               );
             },
             createPost: (_result, _args, _cache, _info) => {
+              console.log("createPost cache: ", _cache);
+              invalidatePostsCache(_cache);
+
               const queryField = _cache.inspectFields("Query");
               const fieldInfos = queryField.filter(
                 (info) => info.fieldName === "posts"
@@ -103,7 +106,6 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
                * Saves time and space complexity but I don't like it. *                     *
                * Looking for alternatives.                            *
                *******************************************************/
-
               const { postId, value } = _args as VoteMutationVariables;
               const data = _cache.readFragment(
                 gql`
@@ -117,7 +119,6 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
               );
               if (data) {
                 if (data.voteStatus === value) return;
-                console.log({ data, value, _cache });
                 const newPoints =
                   (data.points as number) + (!data.voteStatus ? 1 : 2) * value;
                 _cache.writeFragment(

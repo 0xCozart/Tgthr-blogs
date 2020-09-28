@@ -179,6 +179,11 @@ export type UserResponseFragment = (
   )> }
 );
 
+export type NewCreatedPostFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'title' | 'text' | 'points' | 'creatorId' | 'voteStatus' | 'createdAt' | 'updatedAt'>
+);
+
 export type ChangePasswordMutationVariables = Exact<{
   token: Scalars['String'];
   newPassword: Scalars['String'];
@@ -208,7 +213,7 @@ export type CreatePostMutation = (
   { __typename?: 'Mutation' }
   & { createPost: (
     { __typename?: 'Post' }
-    & PostInfoFragment
+    & NewCreatedPostFragment
   ) }
 );
 
@@ -385,6 +390,18 @@ export const UserResponseFragmentDoc = gql`
 }
     ${InputErrorFragmentDoc}
 ${RegularUserFragmentDoc}`;
+export const NewCreatedPostFragmentDoc = gql`
+    fragment newCreatedPost on Post {
+  id
+  title
+  text
+  points
+  creatorId
+  voteStatus
+  createdAt
+  updatedAt
+}
+    `;
 export const ChangePasswordDocument = gql`
     mutation ChangePassword($token: String!, $newPassword: String!) {
   changePassword(token: $token, newPassword: $newPassword) {
@@ -405,10 +422,10 @@ export function useChangePasswordMutation() {
 export const CreatePostDocument = gql`
     mutation CreatePost($content: PostInput!) {
   createPost(content: $content) {
-    ...PostInfo
+    ...newCreatedPost
   }
 }
-    ${PostInfoFragmentDoc}`;
+    ${NewCreatedPostFragmentDoc}`;
 
 export function useCreatePostMutation() {
   return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);

@@ -46,10 +46,18 @@ export class Post extends BaseEntity {
   votes: Vote[];
 
   @Field(() => String)
-  @CreateDateColumn()
+  @Column({
+    type: "timestamp with time zone",
+    default: () => "CURRENT_TIMESTAMP",
+  })
   createdAt: Date;
 
   @Field(() => String)
-  @UpdateDateColumn()
+  @Column({
+    type: "timestamp with time zone",
+    default: () => "CURRENT_TIMESTAMP",
+    onUpdate: "CURRENT_TIMESTAMP",
+    nullable: true,
+  })
   updatedAt: Date;
 }

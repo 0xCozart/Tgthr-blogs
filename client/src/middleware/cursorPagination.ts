@@ -13,9 +13,9 @@ export const cursorPagination = (): Resolver => {
     // edge case for 0 items returned
     const size = fieldInfos.length;
     if (size === 0) {
-      return undefined;
+      return;
     }
-    ///////////////////////////////////////////////////////////////////////////h
+    ///////////////////////////////////////////////////////////////////////////
     /*
      * Checks if the current <post> query (with variables) results
      * are in the cache.
@@ -48,6 +48,7 @@ export const cursorPagination = (): Resolver => {
 
       results.push(...responsePosts);
     });
+    // console.log({ results });
 
     return { __typename: "PaginatedPosts", hasMore, posts: results };
   };

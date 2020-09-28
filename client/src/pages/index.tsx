@@ -1,17 +1,21 @@
 import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
-import NextLink from "next/link";
-import { Link, Stack, Heading, Flex, Button } from "@chakra-ui/core";
+import { Stack, Flex, Button } from "@chakra-ui/core";
 
 import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
 
+interface vars {
+  limit: number;
+  cursor: null | string | undefined;
+}
+
 const Index = () => {
-  const [variables, setVariables] = useState({
+  const [variables, setVariables] = useState<vars>({
     limit: 5,
-    cursor: null as null | string,
+    cursor: null,
   });
   const [{ data, fetching }] = usePostsSnippetsQuery({
     variables,
@@ -22,13 +26,6 @@ const Index = () => {
   }
   return (
     <Layout>
-      <Flex align={"center"}>
-        <Heading>Tgthr</Heading>
-        <NextLink href="/create-post">
-          <Link ml={"auto"}>create post</Link>
-        </NextLink>
-      </Flex>
-      <br />
       {!data && fetching ? (
         <div>loading...</div>
       ) : (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Heading, Text, Flex, IconButton, Link } from "@chakra-ui/core";
+import { Box, Heading, Text, Flex, IconButton } from "@chakra-ui/core";
 import { PostInfoFragment, useVoteMutation } from "../generated/graphql";
 
 interface CardBoxProps {

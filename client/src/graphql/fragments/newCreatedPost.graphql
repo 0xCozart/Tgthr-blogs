@@ -1,0 +1,10 @@
+fragment newCreatedPost on Post {
+  id
+  title
+  text
+  points
+  creatorId
+  voteStatus
+  createdAt
+  updatedAt
+}
