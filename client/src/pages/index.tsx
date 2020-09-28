@@ -29,7 +29,7 @@ const Index = () => {
       {!data && fetching ? (
         <div>loading...</div>
       ) : (
-        <Stack>
+        <Stack m="auto" alignItems="center">
           {data!.posts.posts.map((post) => (
             <PostSnippet key={post.id} post={post} />
           ))}

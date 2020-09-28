@@ -96,6 +96,9 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
                 _cache.invalidate("Query", "posts", fi.arguments || {});
               });
             },
+            deletePost: (_result, _args, _cache, _info) => {
+              invalidatePostsCache(_cache);
+            },
             vote: (_result, _args, _cache, _info) => {
               /*******************************************************
                * Don't like the way this is done.              *

@@ -4,18 +4,21 @@ import NextLink from "next/link";
 import {
   PostInfoWithTextSnippetsFragment,
   useVoteMutation,
+  useDeletePostMutation,
 } from "../generated/graphql";
 interface CardBoxProps {
   post: PostInfoWithTextSnippetsFragment;
 }
 
 const PostSnippet: React.FC<CardBoxProps> = ({
-  post: { id, title, textSnippet, points, voteStatus },
+  post: { id, title, textSnippet, points, voteStatus, creator },
 }) => {
   const [{}, vote] = useVoteMutation();
   const [voteLoading, setVoteLoading] = useState<
     "upvote-loading" | "downvote-loading" | "not-loading"
   >();
+  const [, deletePost] = useDeletePostMutation();
+
   const handleVote = async (value: number) => {
     try {
       if (value === 1) {
@@ -32,8 +35,21 @@ const PostSnippet: React.FC<CardBoxProps> = ({
     setVoteLoading("not-loading");
   };
 
+  const handleDelete = async () => {
+    await deletePost({ id });
+  };
+
   return (
-    <Flex p={5} shadow="md" borderWidth="2px" flex="1" rounded="md" m={2}>
+    <Flex
+      p={5}
+      width={800}
+      shadow="md"
+      borderWidth="2px"
+      flex="1"
+      rounded="md"
+      marginLeft="auto"
+      // align="center"
+    >
       <Flex
         direction="column"
         alignItems="center"
@@ -60,14 +76,23 @@ const PostSnippet: React.FC<CardBoxProps> = ({
           variantColor={voteStatus === -1 ? "red" : undefined}
         />
       </Flex>
-      <Box>
-        <NextLink href={`/post/[id]`} as={`/post/${id}`}>
-          <Link>
-            <Heading fontSize="xl">{title}</Heading>
-          </Link>
-        </NextLink>
-        <Text mt={4}>{textSnippet}</Text>
-      </Box>
+      <Flex w="100%">
+        <Box flex={1}>
+          <NextLink href={`/post/[id]`} as={`/post/${id}`}>
+            <Link>
+              <Heading fontSize="xl">{title}</Heading>
+            </Link>
+          </NextLink>
+          <Text>posted by {creator.username}</Text>
+          <Text mt={4}>{textSnippet}</Text>
+        </Box>
+        <IconButton
+          aria-label="Delete Post"
+          icon="delete"
+          mr={1}
+          onClick={() => handleDelete()}
+        />
+      </Flex>
     </Flex>
   );
 };

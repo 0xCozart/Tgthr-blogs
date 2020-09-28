@@ -16,6 +16,6 @@ export class Vote extends BaseEntity {
   @ManyToOne(() => User, (user) => user.votes)
   user: User;
 
-  @ManyToOne(() => Post, (post) => post.votes)
+  @ManyToOne(() => Post, (post) => post.votes, { onDelete: "CASCADE" })
   post: Post;
 }

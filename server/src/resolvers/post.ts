@@ -12,7 +12,7 @@ import {
   Root,
   ObjectType,
 } from "type-graphql";
-import { getConnection } from "typeorm";
+import { getConnection, getConnectionOptions } from "typeorm";
 
 import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
@@ -133,24 +133,48 @@ export class PostResolver {
   }
 
   @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuth)
   async updatePost(
     @Arg("id", () => Int) id: number,
-    @Arg("title", () => String, { nullable: true }) title: string
+    @Arg("title") title: string,
+    @Arg("text") text: string,
+    @Ctx() { req }: MyContext
   ): Promise<Post | null> {
-    const post = await Post.findOne(id);
+    // const post = await Post.findOne({ id, creatorId: req.session.userId });
 
-    if (!post) return null;
+    // if (!post) return null;
 
-    if (typeof title !== undefined) {
-      await Post.update({ id }, { title });
-    }
+    // await Post.update({ id }, { title, text });
+    // return post;
 
-    return post;
+    // This method allows us to return the updated post
+    const results = await getConnection()
+      .createQueryBuilder()
+      .update(Post)
+      .set({ title, text })
+      .where('id=:id and "creatorId" = :creatorId', {
+        id,
+        creatorId: req.session.userId,
+      })
+      .returning("*")
+      .execute();
+    console.log(results.raw[0]);
+
+    return results.raw[0];
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg("id", () => Int) id: number): Promise<Boolean> {
-    await Post.delete(id);
+  @UseMiddleware(isAuth)
+  async deletePost(
+    @Arg("id", () => Int) id: number,
+    @Ctx() { req }: MyContext
+  ): Promise<boolean> {
+    const post = await Post.findOne(id);
+    if (!post) return false;
+    if (post.creatorId !== req.session.userId) return false;
+
+    // await Vote.delete();
+    await Post.delete({ id, creatorId: req.session.userId });
     return true;
   }
 
