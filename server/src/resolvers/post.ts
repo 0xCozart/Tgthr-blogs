@@ -18,6 +18,7 @@ import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
 import { isAuth } from "../middleware/isAuth";
 import { Vote } from "../entities/Vote";
+import { User } from "../entities/User";
 
 @InputType()
 class PostInput {
@@ -42,7 +43,7 @@ export class PostResolver {
     // "id" argument used in SDL like so {post(id:arg){...}}
     @Arg("id", () => Int) id: number // <-- the id here is what we use in source
   ): Promise<Post | undefined> {
-    return await Post.findOne(id, { relations: ["creator"] });
+    return await Post.findOne(id);
   }
 
   /* ---------------------TODO---------------------------
@@ -54,6 +55,11 @@ export class PostResolver {
   @FieldResolver(() => String)
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 50);
+  }
+
+  @FieldResolver(() => User)
+  creator(@Root() post: Post) {
+    return User.findOne(post.creatorId);
   }
 
   @Query(() => PaginatedPosts)
@@ -72,22 +78,12 @@ export class PostResolver {
     const posts = await getConnection().query(
       `
         select p.*,
-        json_build_object(
-          'id', u.id,
-          'username', u.username,
-          'email', u.email,
-          'createdAt', u."createdAt",
-          'updatedAt', u."updatedAt"
-        ) creator,
-
-            ${
-              req.session.userId
-                ? `(select value from vote where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
-                : `null as "voteStatus"`
-            }
-
+        ${
+          req.session.userId
+            ? `(select value from vote where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
+            : `null as "voteStatus"`
+        }
         from post p
-        inner join public.user u on u.id = p."creatorId"
         ${cursor ? `where p."createdAt" < ${cursorDate}` : ""}
         order by p."createdAt" DESC
         limit ${reaLimitPlusOne}
