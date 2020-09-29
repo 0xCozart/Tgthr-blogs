@@ -19,7 +19,7 @@ import { isServer } from "../utils/isServer";
 const urqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = "";
   if (isServer()) {
-    cookie = ctx.req.headers.cookie;
+    cookie = ctx?.req?.headers?.cookie;
   }
 
   return {
@@ -35,9 +35,9 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
           PaginatedPosts: () => null,
         },
         resolvers: {
-          // Query: {
-          //   posts: cursorPagination(),
-          // },
+          Query: {
+            posts: cursorPagination(),
+          },
         },
         updates: {
           Mutation: {
@@ -53,6 +53,7 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
                 }
               );
               invalidatePostsCache(_cache);
+
               // const queryField = _cache.inspectFields("Query");
               // const fieldInfos = queryField.filter(
               //   (info) => info.fieldName === "posts"

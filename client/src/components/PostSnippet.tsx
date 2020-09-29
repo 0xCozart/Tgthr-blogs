@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Box, Heading, Text, Flex, IconButton, Link } from "@chakra-ui/core";
+import {
+  Box,
+  Heading,
+  Text,
+  Flex,
+  IconButton,
+  Link,
+  Stack,
+} from "@chakra-ui/core";
 import NextLink from "next/link";
 import {
   PostInfoWithTextSnippetsFragment,
@@ -8,10 +16,12 @@ import {
 } from "../generated/graphql";
 interface CardBoxProps {
   post: PostInfoWithTextSnippetsFragment;
+  userId: number | undefined;
 }
 
 const PostSnippet: React.FC<CardBoxProps> = ({
-  post: { id, title, textSnippet, points, voteStatus, creator },
+  post: { id, title, textSnippet, points, voteStatus, creator, creatorId },
+  userId,
 }) => {
   const [{}, vote] = useVoteMutation();
   const [voteLoading, setVoteLoading] = useState<
@@ -38,6 +48,8 @@ const PostSnippet: React.FC<CardBoxProps> = ({
   const handleDelete = async () => {
     await deletePost({ id });
   };
+
+  const handleEdit = async () => {};
 
   return (
     <Flex
@@ -86,12 +98,19 @@ const PostSnippet: React.FC<CardBoxProps> = ({
           <Text>posted by {creator.username}</Text>
           <Text mt={4}>{textSnippet}</Text>
         </Box>
-        <IconButton
-          aria-label="Delete Post"
-          icon="delete"
-          mr={1}
-          onClick={() => handleDelete()}
-        />
+        {userId === creatorId ? (
+          <Stack spacing={2} shouldWrapChildren>
+            <IconButton
+              aria-label="Delete Post"
+              icon="delete"
+              mr={1}
+              onClick={() => handleDelete()}
+            />
+            <NextLink href={`/post/edit/[id]`} as={`/post/edit/${id}`}>
+              <IconButton as={Link} aria-label="Edit Post" icon="edit" mr={1} />
+            </NextLink>
+          </Stack>
+        ) : null}
       </Flex>
     </Flex>
   );

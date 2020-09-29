@@ -1,18 +1,35 @@
 import React, { useState } from "react";
-import { Box, Heading, Text, Flex, IconButton } from "@chakra-ui/core";
-import { PostInfoFragment, useVoteMutation } from "../generated/graphql";
+import {
+  Box,
+  Heading,
+  Text,
+  Flex,
+  IconButton,
+  Stack,
+  Link,
+} from "@chakra-ui/core";
+import NextLink from "next/link";
+import {
+  PostInfoFragment,
+  useVoteMutation,
+  useDeletePostMutation,
+} from "../generated/graphql";
 
 interface CardBoxProps {
   post: PostInfoFragment;
+  userId: number | undefined;
 }
 
 const PostFull: React.FC<CardBoxProps> = ({
-  post: { id, title, text, points, voteStatus },
+  post: { id, title, text, points, voteStatus, creatorId, creator },
+  userId,
 }) => {
   const [{}, vote] = useVoteMutation();
   const [voteLoading, setVoteLoading] = useState<
     "upvote-loading" | "downvote-loading" | "not-loading"
   >();
+  const [, deletePost] = useDeletePostMutation();
+
   const handleVote = async (value: number) => {
     try {
       if (value === 1) {
@@ -27,6 +44,10 @@ const PostFull: React.FC<CardBoxProps> = ({
       console.log(error);
     }
     setVoteLoading("not-loading");
+  };
+
+  const handleDelete = async () => {
+    await deletePost({ id });
   };
 
   return (
@@ -57,10 +78,26 @@ const PostFull: React.FC<CardBoxProps> = ({
           variantColor={voteStatus === -1 ? "red" : undefined}
         />
       </Flex>
-      <Box>
-        <Heading fontSize="xl">{title}</Heading>
-        <Text mt={4}>{text}</Text>
-      </Box>
+      <Flex w="100%">
+        <Box flex={1}>
+          <Heading fontSize="xl">{title}</Heading>
+          <Text>{creator.username}</Text>
+          <Text mt={4}>{text}</Text>
+        </Box>
+        {userId === creatorId ? (
+          <Stack spacing={2} shouldWrapChildren>
+            <IconButton
+              aria-label="Delete Post"
+              icon="delete"
+              mr={1}
+              onClick={() => handleDelete()}
+            />
+            <NextLink href={`/post/edit/[id]`} as={`/post/edit/${id}`}>
+              <IconButton as={Link} aria-label="Edit Post" icon="edit" mr={1} />
+            </NextLink>
+          </Stack>
+        ) : null}
+      </Flex>
     </Flex>
   );
 };

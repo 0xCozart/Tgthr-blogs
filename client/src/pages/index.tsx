@@ -3,7 +3,7 @@ import { withUrqlClient } from "next-urql";
 import { Stack, Flex, Button } from "@chakra-ui/core";
 
 import urqlClient from "../middleware/urqlClient";
-import { usePostsSnippetsQuery } from "../generated/graphql";
+import { usePostsSnippetsQuery, useMeQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
 
@@ -17,35 +17,39 @@ const Index = () => {
     limit: 5,
     cursor: null,
   });
-  const [{ data, fetching }] = usePostsSnippetsQuery({
+  const [{ data: postData, fetching: postFetching }] = usePostsSnippetsQuery({
     variables,
   });
 
-  if (!fetching && !data) {
+  const [{ data: userData }] = useMeQuery();
+
+  if (!postFetching && !postData) {
     return <div>getting posts failed for some reason...</div>;
   }
   return (
     <Layout>
-      {!data && fetching ? (
+      {!postData && !userData && postFetching ? (
         <div>loading...</div>
       ) : (
-        <Stack m="auto" alignItems="center">
-          {data!.posts.posts.map((post) => (
-            <PostSnippet key={post.id} post={post} />
+        <Stack spacing={5} align="center" shouldWrapChildren>
+          {postData!.posts.posts.map((post) => (
+            <PostSnippet key={post.id} post={post} userId={userData?.me?.id} />
           ))}
         </Stack>
       )}
-      {data && data.posts.hasMore ? (
+      {postData && postData.posts.hasMore ? (
         <Flex>
           <Button
             onClick={() =>
               setVariables({
                 limit: variables.limit,
                 // gets the timestamp from the last post loaded to pass as cursor
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+                cursor:
+                  postData.posts.posts[postData.posts.posts.length - 1]
+                    .createdAt,
               })
             }
-            isLoading={fetching}
+            isLoading={postFetching}
             m="auto"
             my={8}
           >

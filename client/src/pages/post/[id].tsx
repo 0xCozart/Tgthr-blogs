@@ -1,22 +1,20 @@
-import React from "react";
 import { withUrqlClient } from "next-urql";
-import { useRouter } from "next/router";
-import urqlClient from "../../middleware/urqlClient";
-import { usePostQuery } from "../../generated/graphql";
+import React from "react";
 import Layout from "../../components/Layout";
 import PostFull from "../../components/PostFull";
+import { usePostQuery, useMeQuery } from "../../generated/graphql";
+import urqlClient from "../../middleware/urqlClient";
+import useGetPostIdFromUrl from "../../utils/useGetPostIdFromUrl";
 
 const Post = ({}) => {
-  const router = useRouter();
-  const intId =
-    typeof router.query.id === "string" ? parseInt(router.query.id) : -1;
-  const [{ data, fetching }] = usePostQuery({
-    pause: intId === -1,
+  const postId = useGetPostIdFromUrl();
+  const [{ data, error, fetching }] = usePostQuery({
+    pause: postId === -1,
     variables: {
-      id: intId,
+      id: postId,
     },
   });
-  console.log({ data });
+  const [{ data: meData }] = useMeQuery();
 
   if (!data && fetching) {
     return (
@@ -36,7 +34,7 @@ const Post = ({}) => {
 
   return (
     <Layout>
-      <PostFull post={data.post} />
+      <PostFull post={data.post} userId={meData?.me?.id} />
     </Layout>
   );
 };

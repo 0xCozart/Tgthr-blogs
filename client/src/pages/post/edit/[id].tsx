@@ -1,28 +1,54 @@
-import { Box, Button, Flex, Link } from "@chakra-ui/core";
+import { Box, Button, Flex } from "@chakra-ui/core";
 import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
-import InputField from "../components/InputField";
-import Layout from "../components/Layout";
-import { useCreatePostMutation } from "../generated/graphql";
-import urqlClient from "../middleware/urqlClient";
-import useIsAuth from "../utils/useIsAuth";
+import InputField from "../../../components/InputField";
+import Layout from "../../../components/Layout";
+import {
+  usePostQuery,
+  useUpdatePostMutation,
+} from "../../../generated/graphql";
+import urqlClient from "../../../middleware/urqlClient";
+import useGetPostIdFromUrl from "../../../utils/useGetPostIdFromUrl";
 
-const CreatePost: React.FC<{}> = ({}) => {
+interface Props {}
+
+const EditPost: React.FC<{}> = ({}: Props) => {
   const router = useRouter();
-  const [, createPost] = useCreatePostMutation();
-  useIsAuth();
+  const postId = useGetPostIdFromUrl();
+  const [{ data, error, fetching }] = usePostQuery({
+    pause: postId === -1,
+    variables: {
+      id: postId,
+    },
+  });
+  const [, updatePost] = useUpdatePostMutation();
+
+  if (fetching) {
+    return (
+      <Layout>
+        <Box>Loading...</Box>
+      </Layout>
+    );
+  }
+
+  if (!data?.post) {
+    return (
+      <Layout>
+        <Box>Could not find post...</Box>
+      </Layout>
+    );
+  }
 
   return (
     <Layout variant="small">
       <Formik
-        initialValues={{ title: "", text: "" }}
+        initialValues={{ title: data.post.title, text: data.post.text }}
         onSubmit={async ({ title, text }) => {
-          router.push("/");
+          router.back();
           try {
-            await createPost({ content: { title, text } });
+            await updatePost({ id: postId, title, text });
           } catch (error) {
             console.log(error.message);
           }
@@ -48,13 +74,13 @@ const CreatePost: React.FC<{}> = ({}) => {
 
                 // isDisabled={!!data?.me?.id}
               >
-                post
+                update post
               </Button>
-              <Box ml={"auto"}>
+              {/* <Box ml={"auto"}>
                 <NextLink href={"/forgot-password"}>
                   <Link opacity={0.5}>forgot password</Link>
                 </NextLink>
-              </Box>
+              </Box> */}
             </Flex>
           </Form>
         )}
@@ -63,4 +89,4 @@ const CreatePost: React.FC<{}> = ({}) => {
   );
 };
 
-export default withUrqlClient(urqlClient)(CreatePost);
+export default withUrqlClient(urqlClient)(EditPost);

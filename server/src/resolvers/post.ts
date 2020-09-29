@@ -136,8 +136,8 @@ export class PostResolver {
   @UseMiddleware(isAuth)
   async updatePost(
     @Arg("id", () => Int) id: number,
-    @Arg("title") title: string,
-    @Arg("text") text: string,
+    @Arg("title", () => String) title: string,
+    @Arg("text", () => String) text: string,
     @Ctx() { req }: MyContext
   ): Promise<Post | null> {
     // const post = await Post.findOne({ id, creatorId: req.session.userId });
