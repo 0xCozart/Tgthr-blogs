@@ -6,6 +6,7 @@ import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery, useMeQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
+import { errorMonitor } from "stream";
 
 interface vars {
   limit: number;
@@ -17,14 +18,21 @@ const Index = () => {
     limit: 5,
     cursor: null,
   });
-  const [{ data: postData, fetching: postFetching }] = usePostsSnippetsQuery({
+  const [
+    { data: postData, error, fetching: postFetching },
+  ] = usePostsSnippetsQuery({
     variables,
   });
 
   const [{ data: userData }] = useMeQuery();
 
   if (!postFetching && !postData) {
-    return <div>getting posts failed for some reason...</div>;
+    return (
+      <>
+        <div>getting posts failed for some reason...</div>
+        <div>{error?.message}</div>
+      </>
+    );
   }
   return (
     <Layout>
@@ -32,7 +40,7 @@ const Index = () => {
         <div>loading...</div>
       ) : (
         <Stack spacing={5} align="center" shouldWrapChildren>
-          {postData!.posts.posts.map((post) => (
+          {postData?.posts.posts.map((post) => (
             <PostSnippet key={post.id} post={post} userId={userData?.me?.id} />
           ))}
         </Stack>

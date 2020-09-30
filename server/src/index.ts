@@ -37,6 +37,7 @@ import cors from "cors";
 
 import path from "path";
 import createUserLoader from "./utils/createUserLoader";
+import createVoteLoader from "./utils/createVoteLoader";
 
 const main = async () => {
   const connection = await createConnection({
@@ -103,7 +104,8 @@ const main = async () => {
       req,
       res,
       redis,
-      userLoader: createUserLoader,
+      userLoader: createUserLoader(),
+      voteLoader: createVoteLoader(),
     }),
   });
 

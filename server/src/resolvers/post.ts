@@ -12,7 +12,7 @@ import {
   Root,
   ObjectType,
 } from "type-graphql";
-import { getConnection, getConnectionOptions } from "typeorm";
+import { getConnection } from "typeorm";
 
 import { Post } from "../entities/Post";
 import { MyContext } from "../types/MyContext";
@@ -58,31 +58,36 @@ export class PostResolver {
   }
 
   @FieldResolver(() => User)
-  creator(@Root() post: Post) {
-    return User.findOne(post.creatorId);
+  creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
+    return userLoader.load(post.creatorId);
+  }
+
+  @FieldResolver(() => Int, { nullable: true })
+  async voteStatus(@Root() post: Post, @Ctx() { voteLoader, req }: MyContext) {
+    if (!req.session.userId) return null;
+
+    const vote = await voteLoader.load({
+      postId: post.id,
+      userId: req.session.userId,
+    });
+
+    return vote ? vote.value : null;
   }
 
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req }: MyContext
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
     // console.log({ posts: req.session });
 
-    const { userId } = req.session;
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
     const cursorDate = cursor ? new Date(parseInt(cursor)) : null;
 
     const posts = await getConnection().query(
       `
-        select p.*,
-        ${
-          req.session.userId
-            ? `(select value from vote where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
-            : `null as "voteStatus"`
-        }
+        select p.*
         from post p
         ${cursor ? `where p."createdAt" < ${cursorDate}` : ""}
         order by p."createdAt" DESC
