@@ -54,7 +54,7 @@ const main = async () => {
   // await Post.delete({});
   // await User.delete({});
 
-  // await connection.runMigrations();
+  await connection.runMigrations();
 
   const app = express();
 
@@ -68,7 +68,7 @@ const main = async () => {
     .on("message", (message) => {
       console.log("Redis message: ", message);
     });
-
+  app.set("trust proxy", 1);
   app.use(
     cors({
       origin: "http://localhost:3000",

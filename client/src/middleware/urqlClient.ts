@@ -53,15 +53,6 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
                 }
               );
               invalidatePostsCache(_cache);
-
-              // const queryField = _cache.inspectFields("Query");
-              // const fieldInfos = queryField.filter(
-              //   (info) => info.fieldName === "posts"
-              // );
-              // // invalidates over every pagination when createPost fires
-              // fieldInfos.forEach((fi) => {
-              //   _cache.invalidate("Query", "posts", fi.arguments || {});
-              // });
             },
             logout: (_result, _args, _cache, _info) => {
               configuredUpdateQuery<LogoutMutation, MeQuery>(
@@ -85,17 +76,7 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
               );
             },
             createPost: (_result, _args, _cache, _info) => {
-              console.log("createPost cache: ", _cache);
               invalidatePostsCache(_cache);
-
-              const queryField = _cache.inspectFields("Query");
-              const fieldInfos = queryField.filter(
-                (info) => info.fieldName === "posts"
-              );
-              // invalidates over every pagination when createPost fires
-              fieldInfos.forEach((fi) => {
-                _cache.invalidate("Query", "posts", fi.arguments || {});
-              });
             },
             deletePost: (_result, _args, _cache, _info) => {
               invalidatePostsCache(_cache);
@@ -107,7 +88,7 @@ const urqlClient = (ssrExchange: any, ctx: any) => {
                * Then write to the cache sudo points to give the      *
                * effect of live updating, instead of being fed        *
                * through the backend.~                                *
-               * Saves time and space complexity but I don't like it. *                     *
+               * trades O^2n to O^n but I don't like it. *                     *
                * Looking for alternatives.                            *
                *******************************************************/
               const { postId, value } = _args as VoteMutationVariables;
