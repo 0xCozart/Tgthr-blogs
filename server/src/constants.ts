@@ -8,13 +8,14 @@ dotenvSafe.config({
 });
 
 export const {
-  POSTGRES_USERNAME,
-  POSTGRES_PASSWORD,
-  POSTGRES_DB_NAME,
-  REDIS_SESSION_SECRET,
   PORT,
+  DATABASE_URL,
   NODEMAILER_USER,
   NODEMAILER_PASS,
+  REDIS_SESSION_SECRET,
+  REDIS_URL,
+  CORS_ORIGIN,
+  FORGOT_PASSWORD_URL,
 } = <{ [key: string]: string }>process.env;
 
 export const __prod__ = process.env.NODE_ENV === "production";

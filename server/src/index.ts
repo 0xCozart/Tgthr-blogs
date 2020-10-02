@@ -16,9 +16,9 @@ import {
   PORT,
   COOKIE_NAME,
   TEN_YEARS,
-  POSTGRES_DB_NAME,
-  POSTGRES_USERNAME,
-  POSTGRES_PASSWORD,
+  DATABASE_URL,
+  REDIS_URL,
+  CORS_ORIGIN,
 } from "./constants";
 
 // GraphQL
@@ -42,24 +42,19 @@ import createVoteLoader from "./utils/createVoteLoader";
 const main = async () => {
   const connection = await createConnection({
     type: "postgres",
-    database: POSTGRES_DB_NAME,
-    username: POSTGRES_USERNAME,
-    password: POSTGRES_PASSWORD,
+    url: DATABASE_URL,
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [User, Post, Vote],
   });
-  // await Vote.delete({});
-  // await Post.delete({});
-  // await User.delete({});
 
-  await connection.runMigrations();
+  // await connection.runMigrations();
 
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(REDIS_URL);
 
   redis
     .on("error", (err) => {
@@ -86,8 +81,9 @@ const main = async () => {
       cookie: {
         maxAge: TEN_YEARS, // 10 years because why not
         httpOnly: true,
-        secure: __prod__, //cookie only work in https
         sameSite: "lax", // csrf
+        secure: __prod__, //cookie only work in https
+        domain: CORS_ORIGIN,
       },
       saveUninitialized: false,
       secret: REDIS_SESSION_SECRET,
@@ -116,7 +112,7 @@ const main = async () => {
     cors: false,
   });
 
-  app.listen(PORT, () => {
+  app.listen(parseInt(PORT), () => {
     console.log("server started on localhost: " + PORT);
   });
 };

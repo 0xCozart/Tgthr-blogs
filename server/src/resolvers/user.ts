@@ -14,7 +14,12 @@ import { v4 } from "uuid";
 
 import { MyContext } from "../types/MyContext";
 import { User } from "../entities/User";
-import { COOKIE_NAME, FORGET_PASSWORD_PREFIX, THREE_DAYS } from "../constants";
+import {
+  COOKIE_NAME,
+  FORGET_PASSWORD_PREFIX,
+  THREE_DAYS,
+  FORGOT_PASSWORD_URL,
+} from "../constants";
 import { UsernamePasswordInput } from "../types/UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmail";
@@ -182,7 +187,9 @@ export class UserResolver {
     if (!user) return true;
 
     const token = v4();
-    const htmlLink = `<div><a href="http://localhost:3000/change-password/${token}">reset password</a></div>`;
+    const htmlLink = `<div><a href="${
+      FORGOT_PASSWORD_URL + token
+    }">reset password</a></div>`;
 
     // redis token expires in three days
     redis.set(FORGET_PASSWORD_PREFIX + token, user.id, "ex", THREE_DAYS);
