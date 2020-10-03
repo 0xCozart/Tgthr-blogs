@@ -9,13 +9,13 @@ dotenvSafe.config({
 
 export const {
   PORT,
-  DATABASE_URL,
   NODEMAILER_USER,
   NODEMAILER_PASS,
   REDIS_SESSION_SECRET,
   REDIS_URL,
   CORS_ORIGIN,
   FORGOT_PASSWORD_URL,
+  DOMAIN,
 } = <{ [key: string]: string }>process.env;
 
 export const __prod__ = process.env.NODE_ENV === "production";

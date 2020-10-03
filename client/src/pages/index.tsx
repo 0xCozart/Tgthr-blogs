@@ -6,7 +6,6 @@ import urqlClient from "../middleware/urqlClient";
 import { usePostsSnippetsQuery, useMeQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
-import { errorMonitor } from "stream";
 
 interface vars {
   limit: number;

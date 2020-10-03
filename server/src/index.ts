@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv-safe/config";
 
 // Express
 import express from "express";
@@ -13,12 +14,10 @@ import { Vote } from "./entities/Vote";
 import {
   __prod__,
   REDIS_SESSION_SECRET,
-  PORT,
   COOKIE_NAME,
   TEN_YEARS,
-  DATABASE_URL,
-  REDIS_URL,
   CORS_ORIGIN,
+  DOMAIN,
 } from "./constants";
 
 // GraphQL
@@ -42,7 +41,7 @@ import createVoteLoader from "./utils/createVoteLoader";
 const main = async () => {
   const connection = await createConnection({
     type: "postgres",
-    url: DATABASE_URL,
+    url: process.env.DATABASE_URL,
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
@@ -50,11 +49,10 @@ const main = async () => {
   });
 
   // await connection.runMigrations();
-
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis(REDIS_URL);
+  const redis = new Redis(process.env.REDIS_URL);
 
   redis
     .on("error", (err) => {
@@ -63,10 +61,11 @@ const main = async () => {
     .on("message", (message) => {
       console.log("Redis message: ", message);
     });
+
   app.set("trust proxy", 1);
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -83,7 +82,7 @@ const main = async () => {
         httpOnly: true,
         sameSite: "lax", // csrf
         secure: __prod__, //cookie only work in https
-        domain: CORS_ORIGIN,
+        domain: __prod__ ? DOMAIN : undefined,
       },
       saveUninitialized: false,
       secret: REDIS_SESSION_SECRET,
@@ -112,8 +111,8 @@ const main = async () => {
     cors: false,
   });
 
-  app.listen(parseInt(PORT), () => {
-    console.log("server started on localhost: " + PORT);
+  app.listen(parseInt(process.env.PORT), () => {
+    console.log("server started on localhost: " + process.env.PORT);
   });
 };
 

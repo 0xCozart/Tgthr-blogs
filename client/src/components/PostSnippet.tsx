@@ -49,8 +49,6 @@ const PostSnippet: React.FC<CardBoxProps> = ({
     await deletePost({ id });
   };
 
-  const handleEdit = async () => {};
-
   return (
     <Flex
       p={5}
