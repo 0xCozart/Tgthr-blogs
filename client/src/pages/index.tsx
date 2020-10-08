@@ -26,6 +26,7 @@ const Index = () => {
       limit: 5,
       cursor: null as null | string,
     },
+    notifyOnNetworkStatusChange: true,
   });
 
   console.log(postData);
