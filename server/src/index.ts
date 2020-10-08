@@ -65,7 +65,7 @@ const main = async () => {
   app.set("trust proxy", 1);
   app.use(
     cors({
-      origin: CORS_ORIGIN,
+      origin: __prod__ ? CORS_ORIGIN : "http://localhost:3000",
       credentials: true,
     })
   );

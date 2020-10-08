@@ -83,16 +83,19 @@ export class PostResolver {
 
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
-    const cursorDate = cursor ? new Date(parseInt(cursor)) : null;
+
+    const replacements: any[] = [reaLimitPlusOne];
+    if (cursor) replacements.push(new Date(parseInt(cursor)));
 
     const posts = await getConnection().query(
       `
-        select p.*
-        from post p
-        ${cursor ? `where p."createdAt" < ${cursorDate}` : ""}
-        order by p."createdAt" DESC
-        limit ${reaLimitPlusOne}
-      `
+    select p.*
+    from post p
+    ${cursor ? `where p."createdAt" < $2` : ""}
+    order by p."createdAt" DESC
+    limit $1
+    `,
+      replacements
     );
 
     // const qb = getConnection()
