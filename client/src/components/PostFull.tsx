@@ -14,6 +14,7 @@ import {
   useVoteMutation,
   useDeletePostMutation,
 } from "../generated/graphql";
+import updateAfterVote from "../utils/updateAfterVote";
 
 interface CardBoxProps {
   post: PostInfoFragment;
@@ -31,23 +32,28 @@ const PostFull: React.FC<CardBoxProps> = ({
   const [deletePost] = useDeletePostMutation();
 
   const handleVote = async (value: number) => {
-    try {
-      if (value === 1) {
-        setVoteLoading("upvote-loading");
-        await vote({ variables: { value, postId: id } });
-      } else {
-        // if (voteStatus === -1) return;
-        setVoteLoading("downvote-loading");
-        await vote({ variables: { value: -1, postId: id } });
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    if (value === 1) setVoteLoading("upvote-loading");
+    else setVoteLoading("downvote-loading");
+
+    await vote({
+      variables: { value, postId: id },
+      update: (cache) => {
+        updateAfterVote(value, id, cache);
+      },
+    });
+
     setVoteLoading("not-loading");
   };
 
   const handleDelete = async () => {
-    await deletePost({ variables: { id } });
+    await deletePost({
+      variables: { id },
+      update: (cache) => {
+        // Post:77
+        // console.log({ cache });
+        cache.evict({ id: "Post:" + id });
+      },
+    });
   };
 
   return (
