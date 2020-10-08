@@ -1,16 +1,13 @@
-import React from "react";
-import { useRouter } from "next/router";
-import { Formik, Form } from "formik";
-import { Box, Button, Link, Flex } from "@chakra-ui/core";
-import { withUrqlClient } from "next-urql";
+import { Box, Button, Flex, Link } from "@chakra-ui/core";
+import { Form, Formik } from "formik";
 import NextLink from "next/link";
-
-import urqlClient from "../middleware/urqlClient";
+import { useRouter } from "next/router";
+import React from "react";
 import InputField from "../components/InputField";
-import { useLoginMutation } from "../generated/graphql";
-import { toErrorMap } from "../utils/toErrorMap";
 import Layout from "../components/Layout";
+import { MeDocument, MeQuery, useLoginMutation } from "../generated/graphql";
 import withApollo from "../middleware/withApollo";
+import { toErrorMap } from "../utils/toErrorMap";
 
 const Login: React.FC<{}> = ({}) => {
   const router = useRouter();
@@ -25,6 +22,16 @@ const Login: React.FC<{}> = ({}) => {
             variables: {
               usernameOrEmail,
               password,
+            },
+            update: (cache, { data }) => {
+              cache.writeQuery<MeQuery>({
+                query: MeDocument,
+                data: {
+                  __typename: "Query",
+                  me: data?.login.user,
+                },
+              });
+              cache.evict({ fieldName: "Posts:{}" });
             },
           });
 

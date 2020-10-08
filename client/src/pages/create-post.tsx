@@ -8,6 +8,7 @@ import Layout from "../components/Layout";
 import { useCreatePostMutation } from "../generated/graphql";
 import withApollo from "../middleware/withApollo";
 import useIsAuth from "../utils/useIsAuth";
+import updatePostCache from "../utils/updatePostCache";
 
 const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
@@ -18,6 +19,7 @@ const CreatePost: React.FC<{}> = ({}) => {
     try {
       const { errors } = await createPost({
         variables: { content: { title, text } },
+        update: (cache) => updatePostCache(cache),
       });
       if (!errors) router.push("/");
     } catch (error) {

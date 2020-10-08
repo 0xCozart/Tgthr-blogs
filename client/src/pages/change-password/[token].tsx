@@ -5,7 +5,11 @@ import { useRouter } from "next/router";
 import React, { useState } from "react";
 import InputField from "../../components/InputField";
 import Wrapper from "../../components/Wrapper";
-import { useChangePasswordMutation } from "../../generated/graphql";
+import {
+  useChangePasswordMutation,
+  MeQuery,
+  MeDocument,
+} from "../../generated/graphql";
 import withApollo from "../../middleware/withApollo";
 import { toErrorMap } from "../../utils/toErrorMap";
 
@@ -21,11 +25,20 @@ const ChangePassword: React.FC<{}> = () => {
       <Formik
         initialValues={{ newPassword: "", verifyPassword: "" }}
         onSubmit={async ({ newPassword, verifyPassword }, { setErrors }) => {
-          if (newPassword == verifyPassword) {
+          if (newPassword === verifyPassword) {
             const response = await changePassword({
               variables: {
                 newPassword,
                 token,
+              },
+              update: (cache, { data }) => {
+                cache.writeQuery<MeQuery>({
+                  query: MeDocument,
+                  data: {
+                    __typename: "Query",
+                    me: data?.changePassword.user,
+                  },
+                });
               },
             });
 

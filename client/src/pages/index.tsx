@@ -59,26 +59,26 @@ const Index = () => {
                     postData.posts.posts[postData.posts.posts.length - 1]
                       .createdAt,
                 },
-                updateQuery: (
-                  previousValue,
-                  { fetchMoreResult }
-                ): PostsQuery => {
-                  if (!fetchMoreResult) return previousValue as PostsQuery;
+                // updateQuery: (
+                //   previousValue,
+                //   { fetchMoreResult }
+                // ): PostsQuery => {
+                //   if (!fetchMoreResult) return previousValue as PostsQuery;
 
-                  // typegen for apollo did not generate the types for updateQuery
-                  // need to hard cast types :(
-                  return {
-                    __typename: "Query",
-                    posts: {
-                      __typename: "PaginatedPosts",
-                      hasMore: (fetchMoreResult as PostsQuery).posts.hasMore,
-                      posts: [
-                        ...(previousValue as PostsQuery).posts.posts,
-                        ...(fetchMoreResult as PostsQuery).posts.posts,
-                      ],
-                    },
-                  };
-                },
+                //   // typegen for apollo did not generate the types for updateQuery
+                //   // need to hard cast types :(
+                //   return {
+                //     __typename: "Query",
+                //     posts: {
+                //       __typename: "PaginatedPosts",
+                //       hasMore: (fetchMoreResult as PostsQuery).posts.hasMore,
+                //       posts: [
+                //         ...(previousValue as PostsQuery).posts.posts,
+                //         ...(fetchMoreResult as PostsQuery).posts.posts,
+                //       ],
+                //     },
+                //   };
+                // },
               });
             }}
             isLoading={postLoading}
@@ -93,4 +93,4 @@ const Index = () => {
   );
 };
 
-export default withApollo()(Index);
+export default withApollo({ ssr: true })(Index);
