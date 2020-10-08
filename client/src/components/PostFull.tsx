@@ -24,21 +24,21 @@ const PostFull: React.FC<CardBoxProps> = ({
   post: { id, title, text, points, voteStatus, creatorId, creator },
   userId,
 }) => {
-  const [{}, vote] = useVoteMutation();
+  const [vote] = useVoteMutation();
   const [voteLoading, setVoteLoading] = useState<
     "upvote-loading" | "downvote-loading" | "not-loading"
   >();
-  const [, deletePost] = useDeletePostMutation();
+  const [deletePost] = useDeletePostMutation();
 
   const handleVote = async (value: number) => {
     try {
       if (value === 1) {
         setVoteLoading("upvote-loading");
-        await vote({ value, postId: id });
+        await vote({ variables: { value, postId: id } });
       } else {
         // if (voteStatus === -1) return;
         setVoteLoading("downvote-loading");
-        await vote({ value: -1, postId: id });
+        await vote({ variables: { value: -1, postId: id } });
       }
     } catch (error) {
       console.log(error);
@@ -47,7 +47,7 @@ const PostFull: React.FC<CardBoxProps> = ({
   };
 
   const handleDelete = async () => {
-    await deletePost({ id });
+    await deletePost({ variables: { id } });
   };
 
   return (

@@ -13,7 +13,7 @@ import Layout from "../components/Layout";
 
 const Login: React.FC<{}> = ({}) => {
   const router = useRouter();
-  const [, login] = useLoginMutation();
+  const [login] = useLoginMutation();
 
   return (
     <Layout variant="small">
@@ -21,8 +21,10 @@ const Login: React.FC<{}> = ({}) => {
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async ({ usernameOrEmail, password }, { setErrors }) => {
           const response = await login({
-            usernameOrEmail,
-            password,
+            variables: {
+              usernameOrEmail,
+              password,
+            },
           });
 
           if (response.data?.login.errors) {
@@ -71,4 +73,4 @@ const Login: React.FC<{}> = ({}) => {
   );
 };
 
-export default withUrqlClient(urqlClient)(Login);
+export default Login;

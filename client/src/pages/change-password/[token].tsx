@@ -13,7 +13,7 @@ import InputField from "../../components/InputField";
 
 const ChangePassword: React.FC<{}> = () => {
   const router = useRouter();
-  const [, changePassword] = useChangePasswordMutation();
+  const [changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
   const token =
     typeof router.query.token === "string" ? router.query.token : "";
@@ -27,8 +27,10 @@ const ChangePassword: React.FC<{}> = () => {
             console.log(newPassword);
             console.log(verifyPassword);
             const response = await changePassword({
-              newPassword,
-              token,
+              variables: {
+                newPassword,
+                token,
+              },
             });
 
             if (response.data?.changePassword.errors) {
@@ -86,4 +88,4 @@ const ChangePassword: React.FC<{}> = () => {
   );
 };
 
-export default withUrqlClient(urqlClient, { ssr: false })(ChangePassword);
+export default ChangePassword;

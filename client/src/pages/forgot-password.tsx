@@ -10,13 +10,13 @@ import { useForgotPasswordMutation } from "../generated/graphql";
 
 const ForgotPassword: React.FC<{}> = () => {
   const [complete, setComplete] = useState(false);
-  const [, forgotPassword] = useForgotPasswordMutation();
+  const [forgotPassword] = useForgotPasswordMutation();
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ email: "" }}
         onSubmit={async ({ email }) => {
-          await forgotPassword({ email });
+          await forgotPassword({ variables: { email } });
           setComplete(true);
         }}
       >
@@ -49,4 +49,4 @@ const ForgotPassword: React.FC<{}> = () => {
   );
 };
 
-export default withUrqlClient(urqlClient)(ForgotPassword);
+export default ForgotPassword;

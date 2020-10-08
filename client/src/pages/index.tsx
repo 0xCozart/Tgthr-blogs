@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { withUrqlClient } from "next-urql";
 import { Stack, Flex, Button } from "@chakra-ui/core";
 
-import urqlClient from "../middleware/urqlClient";
-import { usePostsSnippetsQuery, useMeQuery } from "../generated/graphql";
+import {
+  usePostsSnippetsQuery,
+  useMeQuery,
+  PostsQuery,
+} from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
 
@@ -13,19 +15,23 @@ interface vars {
 }
 
 const Index = () => {
-  const [variables, setVariables] = useState<vars>({
-    limit: 5,
-    cursor: null,
-  });
-  const [
-    { data: postData, error, fetching: postFetching },
-  ] = usePostsSnippetsQuery({
+  const {
+    data: postData,
+    error,
+    loading: postLoading,
+    fetchMore,
     variables,
+  } = usePostsSnippetsQuery({
+    variables: {
+      limit: 5,
+      cursor: null as null | string,
+    },
   });
 
-  const [{ data: userData }] = useMeQuery();
+  console.log(postData);
+  const { data: userData } = useMeQuery();
 
-  if (!postFetching && !postData) {
+  if (!postLoading && !postData) {
     return (
       <>
         <div>getting posts failed for some reason...</div>
@@ -35,7 +41,7 @@ const Index = () => {
   }
   return (
     <Layout>
-      {!postData && !userData && postFetching ? (
+      {!postData && !userData && postLoading ? (
         <div>loading...</div>
       ) : (
         <Stack spacing={5} align="center" shouldWrapChildren>
@@ -48,15 +54,37 @@ const Index = () => {
         <Flex>
           <Button
             onClick={() =>
-              setVariables({
-                limit: variables.limit,
-                // gets the timestamp from the last post loaded to pass as cursor
-                cursor:
-                  postData.posts.posts[postData.posts.posts.length - 1]
-                    .createdAt,
+              fetchMore({
+                variables: {
+                  limit: variables?.limit,
+                  // gets the timestamp from the last post loaded to pass as cursor
+                  cursor:
+                    postData.posts.posts[postData.posts.posts.length - 1]
+                      .createdAt,
+                },
+                updateQuery: (
+                  previousValue,
+                  { fetchMoreResult }
+                ): PostsQuery => {
+                  if (!fetchMoreResult) return previousValue as PostsQuery;
+
+                  // typegen for apollo did not generate the tyoes for updateQuery
+                  // need to hard cast types :(
+                  return {
+                    __typename: "Query",
+                    posts: {
+                      __typename: "PaginatedPosts",
+                      hasMore: (fetchMoreResult as PostsQuery).posts.hasMore,
+                      posts: [
+                        ...(previousValue as PostsQuery).posts.posts,
+                        ...(fetchMoreResult as PostsQuery).posts.posts,
+                      ],
+                    },
+                  };
+                },
               })
             }
-            isLoading={postFetching}
+            isLoading={postLoading}
             m="auto"
             my={8}
           >
@@ -68,4 +96,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(urqlClient, { ssr: true })(Index);
+export default Index;

@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Flex, Link, Button, Heading } from "@chakra-ui/core";
 import NextLink from "next/link";
+import { useApolloClient } from "@apollo/client";
 
 import { useMeQuery, useLogoutMutation } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
@@ -8,12 +9,13 @@ import { isServer } from "../utils/isServer";
 interface NavBarProps {}
 
 const NavBar: React.FC<NavBarProps> = ({}) => {
-  const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
-  const [{ data, fetching }] = useMeQuery({ pause: isServer() });
+  const [logout, { loading: logoutFetching }] = useLogoutMutation();
+  const apolloClient = useApolloClient();
+  const { data, loading } = useMeQuery({ skip: isServer() });
   let body = null;
 
   // data is loading
-  if (fetching) {
+  if (loading) {
     body = (
       <NextLink href="/register">
         <Link mr={2}>register</Link>
@@ -44,7 +46,10 @@ const NavBar: React.FC<NavBarProps> = ({}) => {
         <Box mr={3}>{data.me.username}</Box>
         <Button
           variant="link"
-          onClick={() => logout()}
+          onClick={async () => {
+            await logout();
+            await apolloClient.resetStore();
+          }}
           isLoading={logoutFetching}
         >
           logout

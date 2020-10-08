@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikErrors } from "formik";
 import { Box, Button } from "@chakra-ui/core";
 import { withUrqlClient } from "next-urql";
 
@@ -11,33 +11,51 @@ import { useRegisterMutation } from "../generated/graphql";
 
 import { toErrorMap } from "../utils/toErrorMap";
 
-interface registerProps {}
+interface RegisterMutationInformation {
+  credentials: { username: string; email: string; password: string };
+}
 
-const Register: React.FC<registerProps> = ({}) => {
+const Register: React.FC<{}> = ({}) => {
   const router = useRouter();
-  const [, register] = useRegisterMutation();
+  const [register] = useRegisterMutation();
+
+  const onFormSubmit = async (
+    { credentials: { username, email, password } }: RegisterMutationInformation,
+    setErrors: (
+      errors: FormikErrors<{
+        username: string;
+        email: string;
+        password: string;
+      }>
+    ) => void
+  ) => {
+    const response = await register({
+      variables: {
+        credentials: {
+          username,
+          email,
+          password,
+        },
+      },
+    });
+
+    if (response.data?.register.errors) {
+      setErrors(toErrorMap(response.data.register.errors));
+    } else if (response.data?.register.user) {
+      router.push("/");
+    }
+  };
 
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ username: "", email: "", password: "" }}
-        onSubmit={async (values, { setErrors }) => {
-          // Can simply pass in register(values) since the keys in
-          // the value objects match but practice.
-          const response = await register({
-            credentials: {
-              username: values.username,
-              email: values.email,
-              password: values.password,
-            },
-          });
-
-          if (response.data?.register.errors) {
-            setErrors(toErrorMap(response.data.register.errors));
-          } else if (response.data?.register.user) {
-            router.push("/");
-          }
-        }}
+        onSubmit={async ({ username, email, password }, { setErrors }) =>
+          onFormSubmit(
+            { credentials: { username, email, password } },
+            setErrors
+          )
+        }
       >
         {({ isSubmitting }) => (
           <Form>
