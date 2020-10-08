@@ -1,8 +1,8 @@
-import { withUrqlClient } from "next-urql";
 import React from "react";
 import Layout from "../../components/Layout";
 import PostFull from "../../components/PostFull";
-import { usePostQuery, useMeQuery } from "../../generated/graphql";
+import { useMeQuery, usePostQuery } from "../../generated/graphql";
+import withApollo from "../../middleware/withApollo";
 import useGetPostIdFromUrl from "../../utils/useGetPostIdFromUrl";
 
 const Post = ({}) => {
@@ -38,4 +38,4 @@ const Post = ({}) => {
   );
 };
 
-export default Post;
+export default withApollo({ ssr: true })(Post);

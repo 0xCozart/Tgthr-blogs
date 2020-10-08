@@ -10,6 +10,7 @@ import InputField from "../components/InputField";
 import { useRegisterMutation } from "../generated/graphql";
 
 import { toErrorMap } from "../utils/toErrorMap";
+import withApollo from "../middleware/withApollo";
 
 interface RegisterMutationInformation {
   credentials: { username: string; email: string; password: string };
@@ -95,4 +96,4 @@ const Register: React.FC<{}> = ({}) => {
   );
 };
 
-export default withUrqlClient(urqlClient)(Register);
+export default withApollo({ ssr: false })(Register);

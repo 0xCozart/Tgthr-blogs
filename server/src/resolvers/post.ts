@@ -79,8 +79,6 @@ export class PostResolver {
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
-    // console.log({ posts: req.session });
-
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
 
@@ -129,7 +127,6 @@ export class PostResolver {
      * <Post.create({}).save()> : error.code 42601 might be caused by
      * my TZ on linux.
      */
-    console.log({ test: req.session.userId });
     return Post.create({
       ...content,
       creatorId: req.session.userId,
@@ -162,7 +159,6 @@ export class PostResolver {
       })
       .returning("*")
       .execute();
-    console.log(results.raw[0]);
 
     return results.raw[0];
   }

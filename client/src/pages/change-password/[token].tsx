@@ -1,15 +1,13 @@
-import React, { useState } from "react";
-import { useRouter } from "next/router";
-import { withUrqlClient } from "next-urql";
-import { Formik, Form } from "formik";
-import { Button, Box, Link, Flex } from "@chakra-ui/core";
+import { Box, Button, Flex, Link } from "@chakra-ui/core";
+import { Form, Formik } from "formik";
 import NextLink from "next/link";
-
-import urqlClient from "../../middleware/urqlClient";
-import { useChangePasswordMutation } from "../../generated/graphql";
-import Wrapper from "../../components/Wrapper";
-import { toErrorMap } from "../../utils/toErrorMap";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
 import InputField from "../../components/InputField";
+import Wrapper from "../../components/Wrapper";
+import { useChangePasswordMutation } from "../../generated/graphql";
+import withApollo from "../../middleware/withApollo";
+import { toErrorMap } from "../../utils/toErrorMap";
 
 const ChangePassword: React.FC<{}> = () => {
   const router = useRouter();
@@ -24,8 +22,6 @@ const ChangePassword: React.FC<{}> = () => {
         initialValues={{ newPassword: "", verifyPassword: "" }}
         onSubmit={async ({ newPassword, verifyPassword }, { setErrors }) => {
           if (newPassword == verifyPassword) {
-            console.log(newPassword);
-            console.log(verifyPassword);
             const response = await changePassword({
               variables: {
                 newPassword,
@@ -88,4 +84,4 @@ const ChangePassword: React.FC<{}> = () => {
   );
 };
 
-export default ChangePassword;
+export default withApollo({ ssr: false })(ChangePassword);

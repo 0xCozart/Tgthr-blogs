@@ -14,6 +14,7 @@ import {
   useVoteMutation,
   useDeletePostMutation,
 } from "../generated/graphql";
+
 interface CardBoxProps {
   post: PostInfoWithTextSnippetsFragment;
   userId: number | undefined;
@@ -46,7 +47,14 @@ const PostSnippet: React.FC<CardBoxProps> = ({
   };
 
   const handleDelete = async () => {
-    await deletePost({ variables: { id } });
+    await deletePost({
+      variables: { id },
+      update: (cache) => {
+        // Post:77
+        // console.log({ cache });
+        cache.evict({ id: "Post:" + id });
+      },
+    });
   };
 
   return (

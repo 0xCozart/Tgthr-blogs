@@ -8,11 +8,7 @@ import {
 } from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
-
-interface vars {
-  limit: number;
-  cursor: null | string | undefined;
-}
+import withApollo from "../middleware/withApollo";
 
 const Index = () => {
   const {
@@ -29,7 +25,6 @@ const Index = () => {
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log(postData);
   const { data: userData } = useMeQuery();
 
   if (!postLoading && !postData) {
@@ -54,7 +49,8 @@ const Index = () => {
       {postData && postData.posts.hasMore ? (
         <Flex>
           <Button
-            onClick={() =>
+            onClick={() => {
+              // console.log({ postData });
               fetchMore({
                 variables: {
                   limit: variables?.limit,
@@ -69,7 +65,7 @@ const Index = () => {
                 ): PostsQuery => {
                   if (!fetchMoreResult) return previousValue as PostsQuery;
 
-                  // typegen for apollo did not generate the tyoes for updateQuery
+                  // typegen for apollo did not generate the types for updateQuery
                   // need to hard cast types :(
                   return {
                     __typename: "Query",
@@ -83,8 +79,8 @@ const Index = () => {
                     },
                   };
                 },
-              })
-            }
+              });
+            }}
             isLoading={postLoading}
             m="auto"
             my={8}
@@ -97,4 +93,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default withApollo()(Index);

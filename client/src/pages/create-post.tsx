@@ -6,6 +6,7 @@ import React from "react";
 import InputField from "../components/InputField";
 import Layout from "../components/Layout";
 import { useCreatePostMutation } from "../generated/graphql";
+import withApollo from "../middleware/withApollo";
 import useIsAuth from "../utils/useIsAuth";
 
 const CreatePost: React.FC<{}> = ({}) => {
@@ -65,4 +66,4 @@ const CreatePost: React.FC<{}> = ({}) => {
   );
 };
 
-export default CreatePost;
+export default withApollo({ ssr: false })(CreatePost);
