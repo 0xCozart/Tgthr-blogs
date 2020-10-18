@@ -5,6 +5,7 @@ import {
   usePostsSnippetsQuery,
   useMeQuery,
   PostsQuery,
+  usePostsQuery,
 } from "../generated/graphql";
 import Layout from "../components/Layout";
 import PostSnippet from "../components/PostSnippet";
@@ -17,7 +18,7 @@ const Index = () => {
     loading: postLoading,
     fetchMore,
     variables,
-  } = usePostsSnippetsQuery({
+  } = usePostsQuery({
     variables: {
       limit: 5,
       cursor: null as null | string,
@@ -40,12 +41,12 @@ const Index = () => {
       {!postData && !userData && postLoading ? (
         <div>loading...</div>
       ) : (
-        <Stack spacing={5} align="center" shouldWrapChildren>
-          {postData?.posts.posts.map((post) => (
-            <PostSnippet key={post.id} post={post} userId={userData?.me?.id} />
-          ))}
-        </Stack>
-      )}
+          <Stack spacing={5} align="center" shouldWrapChildren>
+            {postData?.posts.posts.map((post) => (
+              <PostSnippet key={post.id} post={post} userId={userData?.me?.id} />
+            ))}
+          </Stack>
+        )}
       {postData && postData.posts.hasMore ? (
         <Flex>
           <Button

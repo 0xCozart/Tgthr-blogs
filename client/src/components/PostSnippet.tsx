@@ -11,19 +11,19 @@ import {
 import NextLink from "next/link";
 import gql from "graphql-tag";
 import {
-  PostInfoWithTextSnippetsFragment,
+  PostInfoFragment,
   useVoteMutation,
   useDeletePostMutation,
 } from "../generated/graphql";
 import updateAfterVote from "../utils/updateAfterVote";
 
 interface CardBoxProps {
-  post: PostInfoWithTextSnippetsFragment;
+  post: PostInfoFragment;
   userId: number | undefined;
 }
 
 const PostSnippet: React.FC<CardBoxProps> = ({
-  post: { id, title, textSnippet, points, voteStatus, creator, creatorId },
+  post: { id, title, text, points, voteStatus, creator, creatorId },
   userId,
 }) => {
   const [vote] = useVoteMutation();
@@ -66,7 +66,7 @@ const PostSnippet: React.FC<CardBoxProps> = ({
       flex="1"
       rounded="md"
       marginLeft="auto"
-      // align="center"
+    // align="center"
     >
       <Flex
         direction="column"
@@ -102,7 +102,7 @@ const PostSnippet: React.FC<CardBoxProps> = ({
             </Link>
           </NextLink>
           <Text>posted by {creator.username}</Text>
-          <Text mt={4}>{textSnippet}</Text>
+          <Text mt={4}>{text}</Text>
         </Box>
         {userId === creatorId ? (
           <Stack spacing={2} shouldWrapChildren>
