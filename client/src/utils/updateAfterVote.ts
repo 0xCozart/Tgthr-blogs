@@ -2,7 +2,7 @@ import { ApolloCache } from "@apollo/client";
 import { VoteMutation } from "../generated/graphql";
 import gql from "graphql-tag";
 
-export default (
+const updateAfterVote = (
   value: number,
   postId: number,
   cache: ApolloCache<VoteMutation>
@@ -40,3 +40,5 @@ export default (
     });
   }
 };
+
+export default updateAfterVote;

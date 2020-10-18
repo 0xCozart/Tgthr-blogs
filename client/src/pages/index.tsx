@@ -41,12 +41,17 @@ const Index = () => {
       {!postData && !userData && postLoading ? (
         <div>loading...</div>
       ) : (
-          <Stack spacing={5} align="center" shouldWrapChildren>
-            {postData?.posts.posts.map((post) => (
-              <PostSnippet key={post.id} post={post} userId={userData?.me?.id} />
-            ))}
-          </Stack>
-        )}
+        <Stack spacing={5} align="center" shouldWrapChildren>
+          {postData?.posts.posts.map((post) => (
+            <PostSnippet
+              key={post.id}
+              post={post}
+              userId={userData?.me?.id}
+              userAuth={!userData?.me}
+            />
+          ))}
+        </Stack>
+      )}
       {postData && postData.posts.hasMore ? (
         <Flex>
           <Button

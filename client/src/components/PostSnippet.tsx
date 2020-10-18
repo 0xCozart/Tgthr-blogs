@@ -18,6 +18,7 @@ import {
 import updateAfterVote from "../utils/updateAfterVote";
 
 interface CardBoxProps {
+  userAuth: boolean;
   post: PostInfoFragment;
   userId: number | undefined;
 }
@@ -25,6 +26,7 @@ interface CardBoxProps {
 const PostSnippet: React.FC<CardBoxProps> = ({
   post: { id, title, text, points, voteStatus, creator, creatorId },
   userId,
+  userAuth,
 }) => {
   const [vote] = useVoteMutation();
   const [voteLoading, setVoteLoading] = useState<
@@ -66,7 +68,7 @@ const PostSnippet: React.FC<CardBoxProps> = ({
       flex="1"
       rounded="md"
       marginLeft="auto"
-    // align="center"
+      // align="center"
     >
       <Flex
         direction="column"
@@ -80,7 +82,7 @@ const PostSnippet: React.FC<CardBoxProps> = ({
           size="md"
           onClick={() => handleVote(1)}
           isLoading={voteLoading === "upvote-loading"}
-          // isDisabled={voteStatus === 1}
+          isDisabled={userAuth}
           variantColor={voteStatus === 1 ? "green" : undefined}
         />
         {points}
@@ -90,7 +92,7 @@ const PostSnippet: React.FC<CardBoxProps> = ({
           size="md"
           onClick={() => handleVote(-1)}
           isLoading={voteLoading === "downvote-loading"}
-          // isDisabled={voteStatus === -1}
+          isDisabled={userAuth}
           variantColor={voteStatus === -1 ? "red" : undefined}
         />
       </Flex>
