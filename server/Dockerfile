@@ -1,0 +1,21 @@
+FROM node:14.11.0-buster
+
+WORKDIR /server
+
+COPY package.json ./
+COPY package-lock.json ./
+COPY .env.production .env 
+
+RUN npm install
+
+COPY . .
+
+ENV NODE_ENV production
+
+RUN npm run build
+
+USER node
+
+EXPOSE 8080
+
+CMD ["node", "dist/index.js"]
