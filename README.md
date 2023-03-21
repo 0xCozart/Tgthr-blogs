@@ -1,39 +1,26 @@
 # Tgthr
 
-### [tgthr.world](https://tgthr.world)
+### [Tgthr.world](https://tgthr.world)
 
-### A social media platform centered around minting user created content into NFT. 
-
-
-The overarching idea of Tgthr is to create a market for social media content to incentivise the creation of high quality content from low quality content.
-
----
-## Ethereum Stack 
-- ### ERC1155 Standard for minting content
-  - Allows for batch transactions
-  - Transmutation of fungible tokens to non-fungible.
-  - Can be deployed in a single contract for infinite token types.
-  - Contract ABI has ```onERC1155Receieved``` for on receieve triggers.
-  - Possible defering of metadata to a URI which can stored on IPFS
-  - Deeper data analytics in regard to mints, burns, transfers, approvals, and metadata changes. 
-  - Actual conent will ben held on IPFS or 3box with the token being the pointer...
-- ### The Graph
-  - Looking for quality subgraphs for querying on-chain data
+A user-friendly blog site built to share and connect.
 ---
 ### Languages/Environment
-- Typescript
-- Node.js
-- GraphQl
-- Docker
+
+- **Typescript**: Strongly typed superset of JavaScript for robust coding
+- **Node.js**: Scalable and high-performance JavaScript runtime
+- **GraphQL**: Flexible and efficient data query language for APIs
+- **Docker**: Containerization platform for simplified deployment
 
 ### Frontend
-- React
-- Next.js
-- Apollo-Client
+
+- **React**: Dynamic and powerful UI library for responsive web components
+- **Next.js**: Framework for optimized, server-rendered React applications
+- **Apollo-Client**: State management and seamless integration with GraphQL APIs
 
 ### Backend
-- Express
-- Apollo
-- PostgreSQL
-- Redis
-- TypeORM
+
+- **Express**: Fast and lightweight web framework for Node.js
+- **Apollo**: Suite of GraphQL tools for building feature-rich APIs
+- **PostgreSQL**: Open-source relational database for reliable data storage
+- **Redis**: In-memory data store for caching and real-time processing
+- **TypeORM**: Object-relational mapping for easy database interaction
